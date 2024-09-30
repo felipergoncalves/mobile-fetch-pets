@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native'
 import React from 'react'
 import { theme } from '../constants/theme'
-import { hp } from '../helpers/common'
+import { hp, wp } from '../helpers/common'
 import Loading from './Loading'
 
-const Button = ({
+const GoogleButton = ({
     buttonStyle,
     textStyle,
     title,
@@ -29,25 +29,33 @@ const Button = ({
     }
   return (
     <Pressable onPress={onPress} style={[styles.button, buttonStyle, hasShadow && shadowStyle]}>
-      <Text style={[styles.text, textStyle]}>{title}</Text>
+      <Image style={styles.googleImage} resizeMode='contain' source={require('../assets/images/google.png')} />
+      <Text style={[styles.text, textStyle]}>Continue com o Google</Text>
     </Pressable>
   )
 }
 
-export default Button
+export default GoogleButton
 
 const styles = StyleSheet.create({
     button:{
-        backgroundColor: '#3198F4',
+        backgroundColor: '#ffffff',
         height: hp(6.6),
         justifyContent: 'center',
         alignItems: 'center',
         borderCurve: 'continuous',
-        borderRadius: theme.radius.xl
+        borderRadius: theme.radius.xl,
+        flexDirection: 'row',
+        gap: 5,
+        zIndex: 1000
+    },
+    googleImage:{
+        height: hp(3),
+        width: wp(10),
+        alignSelf: "center",
     },
     text:{
-        fontSize: hp(2.5),
-        color: 'white',
-        fontWeight: theme.fonts.bold
+        fontSize: hp(2.2),
+        color: theme.colors.dark
     }
 })
