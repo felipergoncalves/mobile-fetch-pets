@@ -11,6 +11,7 @@ import { hp, wp } from '../helpers/common'
 import Input from '../components/Input'
 import Button from '../components/Button'
 import GoogleButton from '../components/GoogleButton'
+import { supabase } from '../lib/supabase'
 
 const login = () => {
     const router = useRouter();
@@ -23,7 +24,21 @@ const login = () => {
             Alert.alert('Login', 'Por favor, preencha todos os campos!');
             return;
         }
-        //good to go
+        
+        let email = emailRef.current.trim();
+        let password = passwordRef.current.trim();
+        setLoading(true)
+        const {error} = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        setLoading(false);
+
+        console.log('error: ', error);
+        if(error){
+            Alert.alert('Login', error.message);
+        }
     }
   return (
     <ScreenWrapper bh={'white'}>
