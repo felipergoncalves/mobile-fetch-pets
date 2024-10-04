@@ -1,5 +1,5 @@
-import { Alert, Pressable, StyleSheet, Text, View, Image } from 'react-native'
-import React, { useRef, useState } from 'react'
+import { Alert, Pressable, StyleSheet, Text, View, Image, Keyboard } from 'react-native'
+import React, { useRef, useState, useEffect} from 'react'
 import ScreenWrapper from '../components/ScreenWrapper'
 import Home from '../assets/icons/Home'
 import { theme } from '../constants/theme'
@@ -18,6 +18,7 @@ const login = () => {
     const emailRef = useRef("");
     const passwordRef = useRef("");
     const [loading, setLoading] = useState(false);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
     const onSubmit = async ()=> {
         if(!emailRef.current || !passwordRef.current){
@@ -40,8 +41,23 @@ const login = () => {
             Alert.alert('Login', error.message);
         }
     }
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+          setKeyboardVisible(true);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+          setKeyboardVisible(false);
+        });
+    
+        return () => {
+          keyboardDidShowListener.remove();
+          keyboardDidHideListener.remove();
+        };
+    }, []);
+
   return (
-    <ScreenWrapper bh={'white'}>
+    <ScreenWrapper bg={'white'}>
         <StatusBar style="dark" />
         <View style={styles.container}>
             <BackButton router={router}/>
@@ -80,8 +96,8 @@ const login = () => {
             <Text style={{textAlign:'center', top: -40, fontSize: hp(1.6)}}>Ou</Text>
             {/* Google Button */}
             <GoogleButton style={styles.googleButton}/>
-            <Image style={styles.dogImage} resizeMode='contain' source={require('../assets/images/loginDog.png')} />
         </View>
+        <Image style={[styles.dogImage, keyboardVisible && styles.imageWithKeyboard]} resizeMode='stretch' source={require('../assets/images/loginDog.png')} />
     </ScreenWrapper>
   )
 }
@@ -98,7 +114,6 @@ const styles = StyleSheet.create({
         height: hp(10),
         width: wp(80),
         alignSelf: "center",
-        position: 'relative',
         zIndex: 3
     },
     welcomeText:{
@@ -131,13 +146,17 @@ const styles = StyleSheet.create({
         color: "black",
     },
     dogImage:{
-        height: hp(30),
+        height: hp(25),
         width: wp(80),
         alignSelf: "center",
-        position: 'relative',
+        position: 'fixed',
         zIndex: 3,
-        bottom: 170
+        bottom: 0,
     },
+    imageWithKeyboard: {
+        bottom: -1000,
+        opacity: 0
+      },
     loginButton:{
         backgroundColor: "#3198F4"
     }
