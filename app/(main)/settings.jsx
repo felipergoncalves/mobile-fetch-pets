@@ -12,7 +12,7 @@ import { supabase } from '../../lib/supabase';
 import Avatar from '../../components/Avatar';
 import Navigator from '../../components/Navigator';
 
-const Profile = () => {
+const Settings = () => {
     const {user, setAuth} = useAuth();
     const router = useRouter()
     
@@ -54,62 +54,52 @@ const UserHeader = ({user, router, handleLogout}) => {
     return(
         <View style={{flex: 1, backgroundColor:"white", paddingHorizontal: wp(4)}}>
             <View>
-                <Header title="Perfil" mb={30}/>
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                  <Icon name="logout" color={theme.colors.rose} />
-                </TouchableOpacity>
+                <Header title="Configurações" mb={30}/>
             </View>
 
             <View style={styles.container}>
-              <View style={{gap: 15}}>
+              <View style={styles.settingsSection}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
                     uri={user?.image}
-                    size={hp(12)}
-                    rounded={theme.radius.xxl*1.4}
+                    size={hp(5)}
+                    rounded={theme.radius.xxl*5}
                   />
-                  <Pressable style={styles.editIcon} onPress={()=> router.push('editProfile')}>
-                    <Icon name="edit" strokeWidth={2.5} size={20} />
-                  </Pressable>
-                </View>
-
-                {/* username and address */}
-                <View style={{alignItems:'center', gap:4}}>
-                  <Text style={styles.userName}>{user && user.name}</Text>
-                  <Text style={styles.infoText}>{user && user.address}</Text>
-                </View>
-
-                {/* email, phone, bio */}
-                <View style={{gap: 10}}>
-                  <View style={styles.info}>
-                    <Icon name='mail' size={20} color={theme.colors.textLight} />
-                    <Text style={styles.infoText}>
-                      {user && user.email}
-                    </Text>
+                  {/* username and address */}
+                  <View style={{marginLeft: 10}}>
+                    <Text style={styles.userName}>{user && user.name}</Text>
                   </View>
-                  {
-                    user && user.phoneNumber && (
-                      <View style={styles.info}>
-                        <Icon name='call' size={20} color={theme.colors.textLight} />
-                        <Text style={styles.infoText}>
-                          {user && user.phoneNumber}
-                        </Text>
-                      </View>
-                    )
-                  }
-                  {
-                    user && user.bio && (
-                      <Text style={styles.infoText}>{user.bio}</Text>
-                    )
-                  }
                 </View>
+              </View>
+              <View style={{gap: 20}}>
+                <Text style={{fontSize: hp(1.8), color:theme.colors.dark}}>Configurações da conta</Text>
+                <View style={{gap: 20, paddingHorizontal: 15}}>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
+                        <Icon name="edit" color={"black"} />
+                        <Text style={styles.actionText}>Editar perfil</Text>
+                    </Pressable>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
+                        <Icon name="edit" color={"black"} />
+                        <Text style={styles.actionText}>Pets para adoção</Text>
+                    </Pressable>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
+                        <Icon name="edit" color={"black"} />
+                        <Text style={styles.actionText}>Pets adotados</Text>
+                    </Pressable>
+                </View>
+              </View>
+              <View style={styles.logoutSection}>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Icon name="logout" color={"white"} size={35}/>
+                    <Text style={styles.logoutText}>Sair</Text>
+                </TouchableOpacity>
               </View>
             </View>
         </View>
     )
 }
 
-export default Profile
+export default Settings
 
 const styles = StyleSheet.create({
   container:{
@@ -123,10 +113,16 @@ const styles = StyleSheet.create({
     width: wp(100),
     height: hp(20)
   },
+  settingsSection:{
+    gap: 15,
+    flexDirection: 'row'
+  },
   avatarContainer:{
     height: hp(12),
-    width: hp(12),
-    alignSelf: 'center'
+    width: '100%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   editIcon:{
     position: 'absolute',
@@ -142,7 +138,7 @@ const styles = StyleSheet.create({
     elevation: 7
   },
   userName:{
-    fontSize: hp(3),
+    fontSize: hp(2),
     fontWeight: '500',
     color: theme.colors.textDark
   },
@@ -157,11 +153,11 @@ const styles = StyleSheet.create({
     color: theme.colors.textLight
   },
   logoutButton:{
-    position: 'absolute',
-    right: 0,
-    padding: 5,
     borderRadius: theme.radius.sm,
-    backgroundColor: '#fee2e2'
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: "100%"
   },
   listStyle:{
     paddingHorizontal: wp(4),
@@ -171,5 +167,33 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     textAlign: 'center',
     color: theme.colors.text
+  },
+  logoutSection:{
+    width: "100%",
+    position: "absolute",
+    bottom: 80,
+    backgroundColor: "#F26F63",
+    flexDirection: "row",
+    alignItems: 'center',
+    borderRadius: theme.radius.md,
+    padding: 10
+  },
+  logoutText:{
+    fontSize: hp(2.2),
+    fontWeight: '500',
+    color: "white",
+    marginLeft: 10
+  },
+  profilePic:{
+    borderRadius: '100%'
+  },
+  accountAction:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20
+  },
+  actionText:{
+    fontSize: hp(2),
+    fontWeight: theme.fonts.medium
   }
 })

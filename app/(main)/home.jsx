@@ -1,13 +1,12 @@
-import { Alert, Button, Pressable, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import React from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { hp, wp } from '../../helpers/common'
 import { theme } from '../../constants/theme'
-import Icon from '../../assets/icons'
 import { useRouter } from 'expo-router'
-import Avatar from '../../components/Avatar'
+import Navigator from '../../components/Navigator'
 
 const Home = () => {
 
@@ -20,24 +19,7 @@ const Home = () => {
     <ScreenWrapper bg="white">
       <View style={styles.container}>
         {/* header */}
-        <View style={styles.header}>
-          <View style={styles.icons}>
-            <Pressable onPress={()=> router.push('notifications')}>
-              <Icon name="heart" size={hp(3.2)} strokeWidth={2} color={theme.colors.text} />
-            </Pressable>
-            <Pressable onPress={()=> router.push('newPost')}>
-              <Icon name="plus" size={hp(3.2)} strokeWidth={2} color={theme.colors.text} />
-            </Pressable>
-            <Pressable onPress={()=> router.push('profile')}>
-              <Avatar 
-                uri={user?.image}
-                size={hp(4.3)}
-                rounded={theme.radius.sm}
-                style={{borderWidth: 2}}
-              />
-            </Pressable>
-          </View>
-        </View>
+        <Navigator user={user}/>
       </View>
     </ScreenWrapper>
   )
@@ -48,17 +30,6 @@ export default Home
 const styles = StyleSheet.create({
   container:{
     flex: 1,
-  },
-  header:{
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: wp(4),
-    position: 'absolute',
-    bottom: 0,
-    padding: hp(1),
-    width: '100%',
-    zIndex: 1000
   },
   title:{
     color: theme.colors.text,
@@ -73,12 +44,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.gray,
     borderWidth: 3
   },
-  icons:{
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 18
-  },
+  
   listStyle:{
     paddingTop: 20,
     paddingHorizontal: wp(4)
