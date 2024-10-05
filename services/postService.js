@@ -31,3 +31,26 @@ export const createOrUpdatePost = async (post)=>{
         return {success: false, msg: "Não foi possível criar seu post"}
     }
 }
+
+export const fetchPosts = async (limit=10)=>{
+    try{
+        const {data, error} = await supabase
+        .from('posts')
+        .select(`
+            *,
+            user: users (id, name, image)
+        `)
+        .order('created_at', {ascending: false})
+        .limit(limit);
+
+        if(error){
+            console.log("fetchPosts error: ", error);
+            return {success: false, msg: "Não foi possível buscar as publicações"}
+        }
+
+        return {success: true, data: data};
+    }catch(error){
+        console.log("fetchPosts error: ", error);
+        return {success: false, msg: "Não foi possível buscar as publicações"}
+    }
+}
