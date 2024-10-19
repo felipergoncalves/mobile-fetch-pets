@@ -1,17 +1,22 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image} from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View, Image, Alert} from 'react-native'
+import React, { useEffect, useState} from 'react'
 import { theme } from '../constants/theme'
 import { hp, wp} from '../helpers/common'
 import Avatar from './Avatar'
 import moment from 'moment'
 import Icon from '../assets/icons'
 import { getSupabaseFileUrl } from '../services/ImageService'
+import { createPostLike, removePostLike } from '../services/postService'
 
 const PostCard = ({
     item,
     currentUser,
     router,
     hasShadow = true,
+    showMoreIcon = true,
+    showDelete = false,
+    onDelete=()=>{},
+    onEdit=()=>{},  
 }) => {
     const shadowStyles = {
         shadowOffset: {
@@ -23,13 +28,57 @@ const PostCard = ({
         elevation: 1
     }
 
-    const openPostDetails = ()=>{
+    const [likes, setLikes] = useState([]);
 
+    useEffect(() => {
+        setLikes(item?.postLikes);
+    }, [])
+
+    const openPostDetails = ()=>{
+        if(!showMoreIcon) return null;
+        router.push({pathname: 'postDetails', params:{postId: item?.id}})
+    }
+
+    const onLike = async ()=>{
+        if(liked){
+            //remove like
+            let updatedLikes = likes.filter(like=> like.userId!=currentUser?.id)
+            setLikes([...updatedLikes])
+            let res = await removePostLike(item?.id, currentUser?.id);
+            if(!res.success){
+                Alert.alert("Publicação", "Houve um problema!");
+            }
+        }else{
+            let data = {
+                userId: currentUser?.id,
+                postId: item?.id
+            }
+            setLikes([...likes, data])
+            let res = await createPostLike(data);
+            if(!res.success){
+                Alert.alert("Publicação", "Houve um problema!");
+            }
+        }
+    }
+
+    const handlePostDelete = () => {
+        Alert.alert("Confirmar", "Tem certeza que deseja fazer isso?", [
+            {
+                text: 'Cancelar',
+                onPress: ()=> console.log('Modal cancelado'),
+                style: 'cancel'
+            },
+            {
+                text: 'Excluir',
+                onPress: ()=> onDelete(item),
+                style: 'destructive'
+            }
+            ]
+        )
     }
 
     const createdAt = moment(item?.created_at).format('MMM D');
-    const likes = [];
-    const liked = false;
+    const liked = likes.filter(like=> like.userId == currentUser?.id)[0]? true: false;
   return (
     <View style={[styles.container, hasShadow && shadowStyles]}>
       <View style={styles.header}>
@@ -45,9 +94,27 @@ const PostCard = ({
                 <Text style={styles.postTime}>{createdAt}</Text>
             </View>
         </View>
-        <TouchableOpacity onPress={openPostDetails}>
-            <Icon name="threeDotsHorizontal" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
-        </TouchableOpacity>
+
+        {
+            showMoreIcon && (
+                <TouchableOpacity onPress={openPostDetails}>
+                    <Icon name="threeDotsHorizontal" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
+                </TouchableOpacity>
+            )
+        }
+
+        {
+            showDelete && currentUser.userId == item?.userId && (
+                <View style={styles.actions}>
+                    <TouchableOpacity onPress={() => onEdit(item)}>
+                        <Icon name="edit" size={hp(2.5)} color={theme.colors.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handlePostDelete}>
+                        <Icon name="delete" size={hp(2.5)} color={theme.colors.rose} />
+                    </TouchableOpacity>
+                </View>
+            )
+        }
       </View>
 
       {/* post body and media */}
@@ -72,7 +139,7 @@ const PostCard = ({
       {/* like, comment */}
       <View style={styles.footer}>
         <View style={styles.footerButton}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onLike}>
                 <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
             </TouchableOpacity>
             <Text style={styles.count}>
@@ -82,12 +149,12 @@ const PostCard = ({
             </Text>
         </View>
         <View style={styles.footerButton}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={openPostDetails}>
                 <Icon name="comment" size={24} color={theme.colors.textLight} />
             </TouchableOpacity>
             <Text style={styles.count}>
                 {
-                    0
+                    item?.comments[0]?.count
                 }
             </Text>
         </View>
