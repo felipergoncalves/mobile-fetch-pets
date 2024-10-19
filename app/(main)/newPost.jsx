@@ -1,14 +1,13 @@
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Pressable, Alert } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import Navigator from '../../components/Navigator';
 import { hp, wp } from '../../helpers/common';
 import { theme } from '../../constants/theme';
 import Header from '../../components/Header';
 import Avatar from '../../components/Avatar';
-import RichTextEditor from '../../components/RichTextEditor';
 import Icon from '../../assets/icons';
 import Button from '../../components/Button';
 import * as ImagePicker from 'expo-image-picker'
@@ -18,12 +17,23 @@ import PostInput from '../../components/PostInput';
 
 const NewPost = () => {
 
-  const {user, setAuth} = useAuth();
+  const post = useLocalSearchParams();
+  const {user} = useAuth();
   const bodyRef = useRef("");
   const editorRef = useRef(null);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(file); 
+  const [file, setFile] = useState(file);
+
+  useEffect(()=>{
+    if(post && post.id) {
+      bodyRef.current = post.body;
+      setFile(post.file || null);
+      setTimeout(()=>{
+        editorRef?.current?.setContentHTML(post.body);
+      }, 300);
+    }
+  }, [])
 
   const onPick = async (isImage)=>{
 
@@ -87,6 +97,8 @@ const NewPost = () => {
       body: bodyRef.current,
       userId: user?.id,
     }
+
+    if(post && post.id) data.id = post.id;
 
     //create post
     setLoading(true);
@@ -161,7 +173,7 @@ const NewPost = () => {
           </ScrollView>
           <Button
             buttonStyle={{height: hp(6.2)}}
-            title="Post"
+            title={post && post.id ? "Atualizar" : "Publicar"}
             loading={loading}
             hasShadow={false}
             onPress={onSubmit}
