@@ -1,22 +1,16 @@
+import createAxiosInstance from "../constants/axiosInstance";
 import { supabase } from "../lib/supabase";
 
 export const getUserData = async (userId)=>{
-    try{
-        const {data, error} = await supabase
-        .from('users')
-        .select()
-        .eq('id', userId)
-        .single();
+    const axios = await createAxiosInstance();
 
-        if(error){
-            return {success: false, msg: error.message};
-        }else{
-            return {success: true, data};
-        }
-    }catch(error){
-        console.log("Got error: ", error)
+    await axios.get('/user/'+userId)
+    .then(({data}) => {
+        return {success: true, data};
+    })
+    .catch((error) => {
         return {success: false, msg: error.message};
-    }
+    });
 }
 
 export const updateUser = async (userId, data)=>{
