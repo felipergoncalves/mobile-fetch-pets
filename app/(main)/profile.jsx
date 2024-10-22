@@ -25,6 +25,7 @@ const Profile = () => {
     
     const onLogout = async () =>{
       // setAuth(null);
+      console.log("[LOGOUT] User logged out", user);
       const {error} = await supabase.auth.signOut();
       if(error){
         Alert.alert('Sair', "Erro ao sair!");
@@ -33,7 +34,6 @@ const Profile = () => {
 
     const getPosts = async ()=>{
       //call the api here
-  
       if(!hasMore) return null;
       limit = limit + 10;
       let res = await fetchPosts(limit, user.id);
@@ -109,7 +109,7 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={{gap: 15}}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user?.image}
+                    uri={user.user?.image}
                     size={hp(12)}
                     rounded={theme.radius.xxl*1.4}
                   />
@@ -120,8 +120,8 @@ const UserHeader = ({user, router, handleLogout}) => {
 
                 {/* username and address */}
                 <View style={{alignItems:'center', gap:4}}>
-                  <Text style={styles.userName}>{user && user.name}</Text>
-                  <Text style={styles.infoText}>{user && user.address}</Text>
+                  <Text style={styles.userName}>{user.user && user.user.name}</Text>
+                  <Text style={styles.infoText}>{user && user.user.address}</Text>
                 </View>
 
                 {/* email, phone, bio */}
@@ -133,18 +133,18 @@ const UserHeader = ({user, router, handleLogout}) => {
                     </Text>
                   </View>
                   {
-                    user && user.phoneNumber && (
+                    user && user.user.phoneNumber && (
                       <View style={styles.info}>
                         <Icon name='call' size={20} color={theme.colors.textLight} />
                         <Text style={styles.infoText}>
-                          {user && user.phoneNumber}
+                          {user && user.user.phoneNumber}
                         </Text>
                       </View>
                     )
                   }
                   {
-                    user && user.bio && (
-                      <Text style={styles.infoText}>{user.bio}</Text>
+                    user.user && user.user.bio && (
+                      <Text style={styles.infoText}>{user.user.bio}</Text>
                     )
                   }
                 </View>

@@ -14,6 +14,7 @@ import GoogleButton from '../components/GoogleButton'
 import createAxiosInstance from '../constants/axiosInstance'
 import { useAuth } from '../contexts/AuthContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getUserData } from '../services/userService'
 
 const login = () => {
     const router = useRouter();
@@ -44,11 +45,16 @@ const login = () => {
 
             userData = data.user;
             const token = userData.token;
-    
+
             // Armazenar o token no AsyncStorage
             await AsyncStorage.setItem('@auth_token', token);
     
             setAuth(userData);
+
+            // Atualizar os dados do usuário
+            let res = await getUserData(userData.user.id);
+            if(res.success) setUserData({...res.data, email});
+
             router.replace('/home');
         })
         .catch((error) => {

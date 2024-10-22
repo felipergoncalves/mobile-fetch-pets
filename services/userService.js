@@ -1,10 +1,10 @@
 import createAxiosInstance from "../constants/axiosInstance";
 import { supabase } from "../lib/supabase";
 
-export const getUserData = async (userId)=>{
+export const getUserData = async (userId) => {
     const axios = await createAxiosInstance();
 
-    await axios.get('/user/'+userId)
+    return await axios.get('/user/'+userId)
     .then(({data}) => {
         return {success: true, data};
     })

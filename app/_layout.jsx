@@ -26,7 +26,7 @@ const MainLayout = () => {
   const checkAuth = async () => {
     const axios = await createAxiosInstance();
 
-    axios.get('/')
+    axios.get('/auth/check')
     .then(({data}) => {
       setAuth(data.user);
       updateUserData(data.user.user, data.user.user.email);

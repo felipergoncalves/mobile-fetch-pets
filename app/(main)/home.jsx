@@ -81,7 +81,7 @@ const Home = () => {
     }
   }
 
-  console.log('[HOME] User: ', user.user.aud);
+  console.log('[HOME] User: ', user.user.name);
 
   return (
     <View style={{flex: 1}}>

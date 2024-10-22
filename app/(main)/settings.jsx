@@ -61,13 +61,13 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={styles.settingsSection}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user?.image}
+                    uri={user.user?.image}
                     size={hp(5)}
                     rounded={theme.radius.xxl*5}
                   />
                   {/* username and address */}
                   <View style={{marginLeft: 10}}>
-                    <Text style={styles.userName}>{user && user.name}</Text>
+                    <Text style={styles.userName}>{user.user && user.user.name}</Text>
                   </View>
                 </View>
               </View>

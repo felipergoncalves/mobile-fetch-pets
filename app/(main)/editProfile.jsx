@@ -28,13 +28,14 @@ const EditProfile = () => {
     })
 
     useEffect(() => {
+        console.log(currentUser)
         if(currentUser){
             setUser({
-                name: currentUser.name || '',
-                phoneNumber: currentUser.phoneNumber || '',
-                image: currentUser.image || null,
-                address: currentUser.address || '',
-                bio: currentUser.bio || '',
+                name: currentUser.user.name || '',
+                phoneNumber: currentUser.user.phoneNumber || '',
+                image: currentUser.user.image || null,
+                address: currentUser.user.address || '',
+                bio: currentUser.user.bio || '',
             });
         }
     }, [currentUser])
