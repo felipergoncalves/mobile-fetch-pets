@@ -13,6 +13,18 @@ export const getUserData = async (userId) => {
     });
 }
 
+export const logout = async () => {
+    const axios = await createAxiosInstance();
+
+    return await axios.post('/auth/logout')
+    .then(({data}) => {
+        return {success: true};
+    })
+    .catch((error) => {
+        return {success: false};
+    });
+}
+
 export const updateUser = async (userId, data)=>{
     try{
         const {error} = await supabase
@@ -29,4 +41,28 @@ export const updateUser = async (userId, data)=>{
         console.log("Got error: ", error);
         return {success: false, msg: error.message};
     }
+}
+
+export const resetPassword = async (email) => {
+    const axios = await createAxiosInstance();
+
+    return await axios.post('/auth/reset-password', {email})
+    .then(({data}) => {
+        return {success: true};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
+}
+
+export const verifyCode = async (email, code) => {
+    const axios = await createAxiosInstance();
+
+    return await axios.post('/auth/verify-token', {email, token: code})
+    .then(({data}) => {
+        return {success: true};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
 }

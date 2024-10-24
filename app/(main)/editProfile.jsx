@@ -31,11 +31,11 @@ const EditProfile = () => {
         console.log(currentUser)
         if(currentUser){
             setUser({
-                name: currentUser.user.name || '',
-                phoneNumber: currentUser.user.phoneNumber || '',
-                image: currentUser.user.image || null,
-                address: currentUser.user.address || '',
-                bio: currentUser.user.bio || '',
+                name: currentUser.profile.name || '',
+                phoneNumber: currentUser.profile.phoneNumber || '',
+                image: currentUser.profile.image || null,
+                address: currentUser.profile.address || '',
+                bio: currentUser.profile.bio || '',
             });
         }
     }, [currentUser])
@@ -72,7 +72,7 @@ const EditProfile = () => {
         }
 
         //update user
-        const res = await updateUser(currentUser?.id, userData);
+        const res = await updateUser(currentUser.profile?.id, userData);
         setLoading(false);
 
         if(res.success){

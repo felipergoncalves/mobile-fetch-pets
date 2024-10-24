@@ -22,10 +22,10 @@ const Navigator = ({ user }) => {
   }
 
   useEffect(() =>{
-
+    if (!user) return;
     let notificationChannel = supabase
     .channel('notifications')
-    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverId=eq.${user.id}`}, handleNewNotification)
+    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverId=eq.${user.user.id}`}, handleNewNotification)
     .subscribe();
     
     return ()=>{
@@ -75,7 +75,7 @@ const Navigator = ({ user }) => {
 
         <Pressable onPress={() => router.push('profile')}>
           <Avatar
-            uri={user?.image}
+            uri={user.user?.image}
             size={hp(4.3)}
             rounded={theme.radius.sm}
             style={{

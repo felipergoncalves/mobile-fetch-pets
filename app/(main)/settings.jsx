@@ -11,17 +11,22 @@ import { theme } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
 import Avatar from '../../components/Avatar';
 import Navigator from '../../components/Navigator';
+import { logout } from '../../services/userService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Settings = () => {
-    const {user, setAuth} = useAuth();
+    const {user, setAuth, setUserData} = useAuth();
     const router = useRouter()
     
     const onLogout = async () =>{
-      // setAuth(null);
-      const {error} = await supabase.auth.signOut();
-      if(error){
+      const {success} = await logout();
+      console.log("[SETTINGS] Logout: ", success)
+      if(!success){
         Alert.alert('Sair', "Erro ao sair!");
+        return
       }
+      await AsyncStorage.removeItem('@auth_token');
+      router.replace('/welcome');
     }
 
     const handleLogout = async() => {

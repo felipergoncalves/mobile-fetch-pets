@@ -16,7 +16,7 @@ const _layout = () => {
 }
 
 const MainLayout = () => {
-  const {setAuth, setUserData} = useAuth();
+  const {user, setAuth, setUserData} = useAuth();
   const router = useRouter();
 
   useEffect(()=>{

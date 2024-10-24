@@ -1,4 +1,4 @@
-import { Alert, Pressable, StyleSheet, Text, View, Image, Keyboard } from 'react-native'
+import { Alert, Pressable, StyleSheet, Text, TouchableOpacity, View, Image, Keyboard } from 'react-native'
 import React, { useRef, useState, useEffect} from 'react'
 import ScreenWrapper from '../components/ScreenWrapper'
 import Home from '../assets/icons/Home'
@@ -45,7 +45,6 @@ const login = () => {
 
             userData = data.user;
             const token = userData.token;
-
             // Armazenar o token no AsyncStorage
             await AsyncStorage.setItem('@auth_token', token);
     
@@ -103,6 +102,12 @@ const login = () => {
                     Esqueceu sua senha?
                 </Text>
                 {/* Button */}
+                <TouchableOpacity
+                    onPress={() => router.push('/resetPassword')} // Ajuste a rota conforme necessário
+                    style={styles.button}
+                >
+                    <Text style={styles.buttonText}>Redefinir Senha</Text>
+                </TouchableOpacity>
                 <Button title={'Login'} loading={loading} styles={styles.loginButton} onPress={onSubmit} />
             </View>
 
