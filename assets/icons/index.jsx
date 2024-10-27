@@ -23,6 +23,9 @@ import Logout from './logout';
 import Image from './Image';
 import Video from './Video';
 import Settings from './Settings';
+import FilterHorizontalIcon from './FilterHorizontalIcon'
+import Notification from './Notification';
+import Chat from './Chat';
 
 const icons = {
     home: Home,
@@ -46,7 +49,10 @@ const icons = {
     logout: Logout,
     image: Image,
     video: Video,
-    settings: Settings
+    settings: Settings,
+    filterHorizontalIcon: FilterHorizontalIcon,
+    notification: Notification,
+    chat: Chat,
 }
 
 const Icon = ({name, ...props}) => {

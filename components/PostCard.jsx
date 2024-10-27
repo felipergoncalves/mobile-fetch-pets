@@ -79,6 +79,10 @@ const PostCard = ({
 
     const createdAt = moment(item?.created_at).format('MMM D');
     const liked = likes.filter(like=> like.userId == currentUser?.id)[0]? true: false;
+    const [showFullText, setShowFullText] = useState(false);
+
+    const fullText = `${item?.pet_name} é ${item?.sex === 'Fêmea' ? 'uma' : 'um'} ${item?.species?.toLowerCase()} adorável, com ${item?.age} ${item?.age > 1 ? 'anos' : 'ano'} de vida. Com um peso de aproximadamente ${item?.weight_kg} kg, ${item?.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item?.age > 1 ? `${item?.sex === 'Fêmea' ? 'uma companheira' : 'um companheiro'}` : 'uma companhia'} cheio(a) de energia e carinho. Sempre pront${item?.sex === 'Fêmea' ? 'a' : 'o'} para novas aventuras, ${item?.pet_name} está à procura de um lar onde possa compartilhar momentos de alegria e amor.`;
+
   return (
     <View style={[styles.container, hasShadow && shadowStyles]}>
       <View style={styles.header}>
@@ -119,9 +123,6 @@ const PostCard = ({
 
       {/* post body and media */}
       <View style={styles.content}>
-        <View style={styles.postBody}>
-            <Text style={{color: theme.colors.dark, fontSize:hp(1.75)}}>{item?.body}</Text>
-        </View>
         
         {/* post image */}
         {
@@ -138,7 +139,7 @@ const PostCard = ({
 
       {/* like, comment */}
       <View style={styles.footer}>
-        <View style={styles.footerButton}>
+        {/* <View style={styles.footerButton}>
             <TouchableOpacity onPress={onLike}>
                 <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
             </TouchableOpacity>
@@ -157,8 +158,24 @@ const PostCard = ({
                     item?.comments[0]?.count
                 }
             </Text>
-        </View>
+        </View> */}
       </View>
+      <TouchableOpacity onPress={openPostDetails}>
+      <View style={{position: "relative"}}>
+      <View style={!showFullText ? styles.textContainer : null}>
+        <Text style={{ fontSize: 14, color: theme.colors.text }} numberOfLines={showFullText ? undefined : 3}>
+          {fullText}
+        </Text>
+      </View>
+      {!showFullText && (
+        <View style={styles.fadeOut}>
+          <TouchableOpacity onPress={openPostDetails}>
+            <Text style={{ fontSize: 14, color: theme.colors.primary }}>Ver mais</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+    </TouchableOpacity>
     </View>
   )
 }
@@ -178,6 +195,17 @@ const styles = StyleSheet.create({
         borderColor: theme.colors.gray,
         shadowColor: '#000'
     },
+    textContainer: {
+        height: 45, // Ajuste a altura conforme necessário para cortar as linhas
+        overflow: 'hidden',
+    },
+    fadeOut: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        paddingVertical: 4,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)', // Ajuste para o fade-out
+      },
     header:{
         flexDirection: 'row',
         justifyContent: 'space-between'

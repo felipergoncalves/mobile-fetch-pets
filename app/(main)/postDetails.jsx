@@ -1,11 +1,10 @@
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { createComment, fetchPostDetails, removeComment } from '../../services/postService';
+import { createComment, fetchPostDetails, removeComment, removePost } from '../../services/postService';
 import { createNotification } from '../../services/notificationsService';
 import { theme } from '../../constants/theme';
 import { hp, wp } from '../../helpers/common';
-import PostCard from '../../components/PostCard';
 import Input from '../../components/Input';
 import { useAuth } from '../../contexts/AuthContext';
 import Loading from '../../components/Loading';
@@ -13,6 +12,7 @@ import Icon from '../../assets/icons';
 import CommentItem from '../../components/CommentItem';
 import { supabase } from '../../lib/supabase';
 import { getUserData } from '../../services/userService';
+import PostCardDetails from '../../components/PostCardDetails';
 
 const PostDetails = () => {
     const {postId, commentId} = useLocalSearchParams();
@@ -111,7 +111,7 @@ const PostDetails = () => {
       //delete post here
       let res = await removePost(post.id);
       if(res.success){
-        router.push('/');
+        router.push('/home');
       } else{
         Alert.alert('Publicação', res.msg)
       }
@@ -139,8 +139,8 @@ const PostDetails = () => {
     }
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
-        <PostCard
+      {/* <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}> */}
+        <PostCardDetails
           item={{...post, comments: [{count: post?.comments?.length}]}}
           currentUser={user}
           router={router}
@@ -151,8 +151,8 @@ const PostDetails = () => {
           onEdit={onEditPost}
         />
 
-        {/* comment input */}
-        <View style={styles.inputContainer}>
+        
+        {/* <View style={styles.inputContainer}>
           <Input
             inputRef={inputRef}
             placeholder="Escreva um comentário..."
@@ -174,7 +174,7 @@ const PostDetails = () => {
           }
         </View>
 
-        {/* comment list */}
+        
         <View style={{marginVertical: 15, gap: 17}}>
           {
             post?.comments?.map(comment=>
@@ -194,8 +194,8 @@ const PostDetails = () => {
               </Text>
             )
           }
-        </View>
-      </ScrollView>
+        </View> */}
+      {/* </ScrollView> */}
     </View>
   )
 }
@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     paddingVertical: wp(7),
+    border: 'none'
   },
   inputContainer:{
     flexDirection: 'row',
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   list:{
-    paddingHorizontal: wp(4)
+    // paddingHorizontal: wp(4)
   },
   sendIcon:{
     alignItems: 'center',
