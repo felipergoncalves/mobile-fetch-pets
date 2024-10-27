@@ -16,9 +16,25 @@ export const createOrUpdatePost = async (post)=>{
 
         const {data, error} = await supabase
         .from('posts')
-        .upsert(post)
+        .upsert({
+            // id: pet.id, // id pode ser usado para atualização, se existir
+            pet_name: post.petName,
+            sex: post.sex,
+            species: post.species,
+            breed: post.breed,
+            age: post.age,
+            weight_kg: post.weight,
+            health_status: post.healthStatus,
+            behavior: post.behavior,
+            special_preferences: post.specialPreferences,
+            userId: post.userId, // ID do usuário que está cadastrando o post
+            file: post.file, // URL da imagem após upload
+            opt_in: post.isConfirmed
+          })
         .select()
         .single();
+
+        console.log("Post Values:", post);
 
         if(error){
             console.log("createPost error: ", error);
@@ -32,51 +48,90 @@ export const createOrUpdatePost = async (post)=>{
     }
 }
 
-export const fetchPosts = async (limit=10, userId)=>{
-    try{
-        if(userId){
-            const {data, error} = await supabase
-            .from('posts')
-            .select(`
-                *,
-                user: users (id, name, image),
-                postLikes (*),
-                comments (count)
-            `)
-            .order('created_at', {ascending: false})
-            .eq('userId', userId)
-            .limit(limit);
+// export const fetchPosts = async (limit=10, userId, species=null)=>{
+//     try{
+//         if(userId){
+//             const {data, error} = await supabase
+//             .from('posts')
+//             .select(`
+//                 *,
+//                 user: users (id, name, image),
+//                 postLikes (*),
+//                 comments (count)
+//             `)
+//             .order('created_at', {ascending: false})
+//             .eq('userId', userId)
+//             .limit(limit);
 
-            if(error){
-                console.log("fetchPosts error: ", error);
-                return {success: false, msg: "Não foi possível buscar as publicações"}
-            }
+//             // Se o filtro de species for passado, adicionar o filtro de espécie
+//             if (species) {
+//                 query = query.eq('species', species);
+//             }
 
-            return {success: true, data: data};
-        }else{
-            const {data, error} = await supabase
-            .from('posts')
-            .select(`
-                *,
-                user: users (id, name, image),
-                postLikes (*),
-                comments (count)
-            `)
-            .order('created_at', {ascending: false})
-            .limit(limit);
+//             if(error){
+//                 console.log("fetchPosts error: ", error);
+//                 return {success: false, msg: "Não foi possível buscar as publicações"}
+//             }
 
-            if(error){
-                console.log("fetchPosts error: ", error);
-                return {success: false, msg: "Não foi possível buscar as publicações"}
-            }
+//             return {success: true, data: data};
+//         }else{
+//             const {data, error} = await supabase
+//             .from('posts')
+//             .select(`
+//                 *,
+//                 user: users (id, name, image),
+//                 postLikes (*),
+//                 comments (count)
+//             `)
+//             .order('created_at', {ascending: false})
+//             .limit(limit);
 
-            return {success: true, data: data};
-        }
-    }catch(error){
+//             if(error){
+//                 console.log("fetchPosts error: ", error);
+//                 return {success: false, msg: "Não foi possível buscar as publicações"}
+//             }
+
+//             return {success: true, data: data};
+//         }
+//     }catch(error){
+//         console.log("fetchPosts error: ", error);
+//         return {success: false, msg: "Não foi possível buscar as publicações"}
+//     }
+// }
+
+export const fetchPosts = async (limit = 10, species = null) => {
+    try {
+      // Inicia a query básica
+      let query = supabase
+        .from('posts')
+        .select(`
+          *,
+          user: users (id, name, image),
+          postLikes (*),
+          comments (count)
+        `)
+        .order('created_at', { ascending: false })
+        // .limit(limit);
+  
+      // Adiciona o filtro de espécie, se necessário
+      if (species) {
+        query = query.eq('species', species);
+      }
+  
+      const { data, error } = await query;
+  
+      if (error) {
         console.log("fetchPosts error: ", error);
-        return {success: false, msg: "Não foi possível buscar as publicações"}
+        return { success: false, msg: "Não foi possível buscar as publicações" };
+      }
+  
+      return { success: true, data: data };
+    } catch (error) {
+      console.log("fetchPosts error: ", error);
+      return { success: false, msg: "Não foi possível buscar as publicações" };
     }
-}
+  };
+  
 
 export const createPostLike = async (postLike)=>{
     try{
