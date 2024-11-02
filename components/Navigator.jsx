@@ -78,12 +78,12 @@ const Navigator = ({ user }) => {
           />
         </Pressable> */}
 
-        <Pressable onPress={() => router.push('home')}>
+        <Pressable onPress={() => router.push('chatList')}>
           <Icon
             name="chat"
             size={hp(3.2)}
             strokeWidth={2}
-            color={isRouteActive('') ? theme.colors.primary : theme.colors.text}
+            color={isRouteActive('chatList') ? theme.colors.primary : theme.colors.text}
           />
         </Pressable>
 

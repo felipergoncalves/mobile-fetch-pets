@@ -2,7 +2,7 @@ import { View, Text, Image, Pressable, StyleSheet, ScrollView, Alert} from 'reac
 import Button from '../../components/Button';
 import * as ImagePicker from 'expo-image-picker'
 import { getSupabaseFileUrl } from '../../services/ImageService';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { theme } from '../../constants/theme';
 import Icon from '../../assets/icons';
@@ -10,6 +10,7 @@ import { hp, wp } from '../../helpers/common';
 import { useAuth } from '../../contexts/AuthContext';
 import Navigator from '../../components/Navigator';
 import ScreenWrapper from '../../components/ScreenWrapper';
+import { useLocalSearchParams } from 'expo-router';
 
 const CustomCheckbox = ({ value, onValueChange }) => {
     return (
@@ -31,6 +32,7 @@ const SecondStep = ({ onNext, onPickImage }) => {
   const [file, setFile] = useState(null);
   const {user} = useAuth();
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const post = useLocalSearchParams();
 
   const handleNext = () => {
     if (!file || !isConfirmed) {
@@ -95,6 +97,14 @@ const SecondStep = ({ onNext, onPickImage }) => {
     
         return getSupabaseFileUrl(file)?.uri;
       }
+
+  //Verificando se o pet já existe, se existir é uma edição
+  useEffect(()=>{
+    if(post && post.id) {
+      setFile(post.file);
+      setIsConfirmed(post.opt_in)
+    }
+  }, [])
 
   return (
     <View style={{flex: 1}}>

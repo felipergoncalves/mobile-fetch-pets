@@ -11,18 +11,11 @@ const NewPost = () => {
   const [formData, setFormData] = useState({});
   const router = useRouter();
 
-  const handleNext = (data) => {
-    setFormData((prev) => ({ ...prev, ...data }));
-    if (step < 3) {
-      setStep((prevStep) => prevStep + 1);
-    } else {
-      handleSubmit();
-    }
-  };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data) => {
     try {
-      const res = await createOrUpdatePost(formData);
+      console.log("Final: ",data);
+      const res = await createOrUpdatePost(data);
 
       if (res.success) {
         //rota de sucesso - ajustar
@@ -36,13 +29,32 @@ const NewPost = () => {
     }
   };
 
-  return (
-    <>
-      {step === 1 && <FirstStep onNext={handleNext} />}
-      {step === 2 && <SecondStep onNext={handleNext} />}
-      {step === 3 && <ThirdStep onNext={handleSubmit} />}
-    </>
-  );
+  const handleNext = (data) => {
+    setFormData((prev) => {
+      const updatedForm = { ...prev, ...data }
+
+
+      if (step < 3) {
+        setStep((prevStep) => prevStep + 1);
+      } else {
+        console.log("Terceiro passo: ", updatedForm);
+        handleSubmit(updatedForm);
+      }
+
+
+      return updatedForm
+    });
+  };
+
+  const stepsMapping = {
+    [1]: <FirstStep onNext={handleNext} />,
+    [2]: <SecondStep onNext={handleNext} />,
+    [3]: <ThirdStep onNext={handleNext} />
+  }
+
+  
+
+  return stepsMapping[step]
 };
 
 export default NewPost;
