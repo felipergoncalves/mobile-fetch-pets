@@ -13,21 +13,53 @@ const FirstStep = ({ onNext }) => {
   const [sex, setSex] = useState('');
   const [species, setSpecies] = useState('');
   const [breed, setBreed] = useState('');
+  const [breedOptions, setBreedOptions] = useState([]);
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
   const [healthStatus, setHealthStatus] = useState('');
+  const [id, setId] = useState('');
   const {user, setAuth} = useAuth();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const router = useRouter();
   const post = useLocalSearchParams();
+
+  useEffect(() => {
+    // Define as opções de raça conforme a espécie selecionada
+    if (species === 'Cachorro') {
+      setBreedOptions([
+        'Labrador', 
+        'Poodle', 
+        'Bulldog', 
+        'Pastor Alemão', 
+        'Golden Retriever', 
+        'Chihuahua', 
+        'Beagle', 
+        'Rottweiler', 
+        'Shih Tzu', 
+        'Dachshund', 
+        'Boxer', 
+        'Schnauzer', 
+        'Husky Siberiano', 
+        'Border Collie', 
+        'Cocker Spaniel', 
+        'Yorkshire Terrier',
+        'Outra'
+      ]);
+    } else if (species === 'Gato') {
+      setBreedOptions(['Siamês', 'Persa', 'Maine Coon', 'Sphynx', 'Ragdoll', 'Bengal', 'Outra']);
+    } else {
+      setBreedOptions([]);
+    }
+    // Resetando o valor da raça ao mudar a espécie
+    setBreed('');
+  }, [species]);
 
   const handleNext = () => {
     if (!petName || !sex || !species || !breed || !age || !weight || !healthStatus) {
       Alert.alert("Novo Pet", "Por favor, preencha todos os campos");
       return;
     }
-    onNext({ petName, sex, species, breed, age, weight, healthStatus });
-    console.log("Dados primeiro passo:", petName, " ", weight, " ", healthStatus);
+    onNext({ petName, sex, species, breed, age, weight, healthStatus, id });
   };
 
   useEffect(() => {
@@ -38,24 +70,34 @@ const FirstStep = ({ onNext }) => {
       setKeyboardVisible(false);
     });
 
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-}, []);
-
-  //Verificando se o pet já existe, se existir é uma edição
-  useEffect(()=>{
     if(post && post.id) {
+      setId(post.id);
       setPetName(post.pet_name);
       setSex(post.sex);
       setSpecies(post.species);
-      setBreed(post.breed);
       setAge(post.age);
       setWeight(post.weight_kg);
       setHealthStatus(post.health_status);
     }
-  }, [])
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  //Verificando se o pet já existe, se existir é uma edição
+  // useEffect(()=>{
+  //   if(post && post.id) {
+  //     setId(post.id);
+  //     setPetName(post.pet_name);
+  //     setSex(post.sex);
+  //     setSpecies(post.species);
+  //     setAge(post.age);
+  //     setWeight(post.weight_kg);
+  //     setHealthStatus(post.health_status);
+  //   }
+  // }, [])
 
   return (
     <View style={{flex: 1}}>
@@ -81,7 +123,7 @@ const FirstStep = ({ onNext }) => {
           <View style={styles.inputContainer}>
             <Text>Sexo</Text>
             <View style={styles.pickerContainer}>
-              <Picker selectedValue={sex} onValueChange={setSex} style={styles.picker}>
+              <Picker selectedValue={sex} onValueChange={setSex} style={styles.picker}  >
                 <Picker.Item label="Selecione" value="" />
                 <Picker.Item label="Macho" value="Macho" />
                 <Picker.Item label="Fêmea" value="Fêmea" />
@@ -106,10 +148,11 @@ const FirstStep = ({ onNext }) => {
           <View style={styles.inputContainer}>
             <Text>Raça</Text>
             <View style={styles.pickerContainer}>
-              <Picker selectedValue={breed} onValueChange={setBreed} style={styles.picker}>
+              <Picker selectedValue={post.id ? post.breed : breed} value={breed} onValueChange={setBreed} style={styles.picker} enabled={species !== ''}>
                 <Picker.Item label="Selecione" value="" />
-                <Picker.Item label="Outra" value="Outra" />
-                {/* Adicione mais raças específicas aqui */}
+                {breedOptions.map((breedOption, index) => (
+                  <Picker.Item key={index} label={breedOption} value={breedOption} />
+                ))}
               </Picker>
             </View>
           </View>
@@ -199,10 +242,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     marginTop: 5,
+    height: 45,
+    justifyContent: "center"
   },
   picker: {
     width: '100%',
-    height: 40,
+    height: '100%',
+    justifyContent: "center",
+    alignItems: "center"
   },
   button: {
     marginTop: 30,

@@ -19,12 +19,17 @@ const CustomCheckbox = ({ value, onValueChange }) => {
         style={{
           width: 24,
           height: 24,
-          backgroundColor: value ? '#3198F4' : 'white',
-          borderColor: value ? '#3198F4' : 'gray',
+          borderColor: 'gray',
           borderWidth: 1,
-          borderRadius: 4
+          borderRadius: 20,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "white"
         }}
-      />
+      >
+        <View style={{backgroundColor: value ? '#3198F4' : 'white', width: 16,
+          height: 16, borderRadius: 20}}></View>
+      </TouchableOpacity>
     );
 };
 

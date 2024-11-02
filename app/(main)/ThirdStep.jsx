@@ -1,28 +1,18 @@
-import { View, Text, TextInput, ScrollView, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, Image, Keyboard, Alert } from 'react-native';
 import Button from '../../components/Button';
-import { useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import { hp } from '../../helpers/common';
 import Navigator from '../../components/Navigator';
+import { useLocalSearchParams } from 'expo-router';
 
-const CustomCheckbox = ({ value, onValueChange }) => {
-    return (
-      <TouchableOpacity onPress={() => onValueChange(!value)} style={{
-        width: 24,
-        height: 24,
-        backgroundColor: value ? 'green' : 'white',
-        borderColor: 'gray',
-        borderWidth: 1
-      }}/>
-    );
-  };
-
-const ThirdStep = ({ onNext }) => {
+const ThirdStep = ({ onNext, isLoading = false }) => {
   const [behavior, setBehavior] = useState('');
   const [specialPreferences, setspecialPreferences] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const {user} = useAuth();
+  const post = useLocalSearchParams();
 
   const handleNext = () => {
     if (!behavior && !specialPreferences) {
@@ -33,8 +23,29 @@ const ThirdStep = ({ onNext }) => {
         behavior,
         specialPreferences,
     });
-    // console.log("valores do terceiro passo:", behavior, " ", specialPreferences, " ", isConfirmed, " ", user?.id);
   };
+
+  //Verificando se o pet já existe, se existir é uma edição
+  useEffect(()=>{
+    if(post && post.id) {
+      setBehavior(post.behavior);
+      setspecialPreferences(post.special_preferences);
+    }
+  }, [])
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+}, []);
 
   return (
     <View style={{flex: 1}}>
@@ -66,12 +77,14 @@ const ThirdStep = ({ onNext }) => {
             </View>
 
             <View style={{marginTop: 20}}>
-              <Button title="Finalizar" onPress={handleNext} />
+              <Button  title="Finalizar" onPress={handleNext} loading={isLoading} />
             </View>
           </View>
         </ScreenWrapper>
       </ScrollView>
-      <Navigator user={user}/>
+      <View style={keyboardVisible && styles.navigatorWithKeyboard}>
+        <Navigator user={user}/>
+      </View>
     </View>
   );
 };
@@ -89,6 +102,10 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
     zIndex: 3
+  },
+  navigatorWithKeyboard: {
+    bottom: -1000,
+    opacity: 0
   },
 })
 
