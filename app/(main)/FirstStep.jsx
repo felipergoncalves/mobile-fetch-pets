@@ -6,7 +6,7 @@ import Button from '../../components/Button';
 import { hp, wp } from '../../helpers/common';
 import Navigator from '../../components/Navigator';
 import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const FirstStep = ({ onNext }) => {
   const [petName, setPetName] = useState('');
@@ -19,6 +19,7 @@ const FirstStep = ({ onNext }) => {
   const {user, setAuth} = useAuth();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const router = useRouter();
+  const post = useLocalSearchParams();
 
   const handleNext = () => {
     if (!petName || !sex || !species || !breed || !age || !weight || !healthStatus) {
@@ -42,6 +43,19 @@ const FirstStep = ({ onNext }) => {
       keyboardDidHideListener.remove();
     };
 }, []);
+
+  //Verificando se o pet já existe, se existir é uma edição
+  useEffect(()=>{
+    if(post && post.id) {
+      setPetName(post.pet_name);
+      setSex(post.sex);
+      setSpecies(post.species);
+      setBreed(post.breed);
+      setAge(post.age);
+      setWeight(post.weight_kg);
+      setHealthStatus(post.health_status);
+    }
+  }, [])
 
   return (
     <View style={{flex: 1}}>

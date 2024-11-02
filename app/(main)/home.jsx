@@ -11,6 +11,7 @@ import { fetchPosts } from '../../services/postService'
 import PostCard from '../../components/PostCard'
 import Loading from '../../components/Loading'
 import Icon from '../../assets/icons'
+import { getUserData } from '../../services/userService'
 
 var limit = 10;
 const Home = () => {
@@ -70,11 +71,17 @@ const Home = () => {
   const handlePostEvent = async (payload)=>{
     if(payload.eventType == 'INSERT' && payload?.new?.id){
       let newPost = {...payload.new};
-      let res = await getUserData(newPost.userId);
-      newPost.postLikes = [];
-      newPost.comments = [{count: 0}];
-      newPost.user = res.success? res.data:{};
-      setPosts(prevPosts=> [newPost, ...prevPosts]);
+     
+
+      try{
+        let res = await getUserData(newPost.userId);
+        newPost.postLikes = [];
+        newPost.comments = [{count: 0}];
+        newPost.user = res.success? res.data:{};
+        setPosts(prevPosts=> [newPost, ...prevPosts]);
+      }catch(err){
+        console.error(err);
+      }
     }
     if(payload.eventType=="DELETE" && payload.old.id){
       setPosts(prevPosts=> {
