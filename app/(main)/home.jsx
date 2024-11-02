@@ -150,7 +150,7 @@ const Home = () => {
           {/* posts */}
           <View style={styles.header}>
               <Image style={{ height: hp(8), width: "50%", alignSelf: "start", zIndex: 3}} resizeMode='contain' source={require('../../assets/images/logo.png')} />
-            <View style={styles.headerActions}>
+            {/* <View style={styles.headerActions}>
               <View style={styles.headerActionsBackground}>
                 <Pressable onPress={() => {
                   setNotificationCount(0);
@@ -166,7 +166,7 @@ const Home = () => {
                   }
                 </Pressable>
               </View>
-            </View>
+            </View> */}
           </View>
           <View style={styles.homeBanner}>
             <Image style={{ height: hp(18), width: "100%", alignSelf: "center", zIndex: 3}} resizeMode='contain' source={require('../../assets/images/home-banner.png')} />

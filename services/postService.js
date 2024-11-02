@@ -14,10 +14,7 @@ export const createOrUpdatePost = async (post)=>{
             }
         }
 
-        const {data, error} = await supabase
-        .from('posts')
-        .upsert({
-            // id: pet.id, // id pode ser usado para atualização, se existir
+        const postData = {
             pet_name: post.petName,
             sex: post.sex,
             species: post.species,
@@ -30,7 +27,16 @@ export const createOrUpdatePost = async (post)=>{
             userId: post.userId, // ID do usuário que está cadastrando o post
             file: post.file, // URL da imagem após upload
             opt_in: post.isConfirmed
-          })
+        };
+        
+        // Adiciona o `id` ao `postData` somente se ele existir
+        if (post.id) {
+            postData.id = post.id;
+        }
+
+        const {data, error} = await supabase
+        .from('posts')
+        .upsert(postData)
         .select()
         .single();
 

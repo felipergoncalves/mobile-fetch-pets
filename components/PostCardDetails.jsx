@@ -101,19 +101,7 @@ const PostCardDetails = ({
       };
 
     const handlePostDelete = () => {
-        Alert.alert("Confirmar", "Tem certeza que deseja fazer isso?", [
-            {
-                text: 'Cancelar',
-                onPress: ()=> console.log('Modal cancelado'),
-                style: 'cancel'
-            },
-            {
-                text: 'Excluir',
-                onPress: ()=> onDelete(item),
-                style: 'destructive'
-            }
-            ]
-        )
+        onDelete(item)
     }
 
     const createdAt = moment(item?.created_at).format('MMM D');
