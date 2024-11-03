@@ -14,29 +14,29 @@ import Navigator from '../../components/Navigator';
 import { fetchPosts } from '../../services/postService';
 import PostCard from '../../components/PostCard';
 import Loading from '../../components/Loading';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 var limit = 0;
 
 const Profile = () => {
-    const {user, setAuth, setUserData} = useAuth();
+    const {user, setAuth} = useAuth();
     const router = useRouter()
     const [posts, setPosts] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     
     const onLogout = async () =>{
+      // setAuth(null);
+      const {error} = await supabase.auth.signOut();
       if(error){
         Alert.alert('Sair', "Erro ao sair!");
       }
-      await AsyncStorage.removeItem('@auth_token');
-      router.replace('/welcome');
     }
 
     const getPosts = async ()=>{
       //call the api here
+  
       if(!hasMore) return null;
       limit = limit + 10;
-      let res = await fetchPosts(limit, user.profile.id);
+      let res = await fetchPosts(limit, user.id);
       if(res.success){
         if(posts.length==res.data.length) setHasMore(false);
         setPosts(res.data);
@@ -109,19 +109,19 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={{gap: 15}}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user.user?.image}
+                    uri={user?.image}
                     size={hp(12)}
                     rounded={theme.radius.xxl*1.4}
                   />
-                  <Pressable style={styles.editIcon} onPress={()=> router.push('edituser')}>
+                  <Pressable style={styles.editIcon} onPress={()=> router.push('editProfile')}>
                     <Icon name="edit" strokeWidth={2.5} size={20} />
                   </Pressable>
                 </View>
 
                 {/* username and address */}
                 <View style={{alignItems:'center', gap:4}}>
-                  <Text style={styles.userName}>{user.user && user.user.name}</Text>
-                  <Text style={styles.infoText}>{user.user && user.user.address}</Text>
+                  <Text style={styles.userName}>{user && user.name}</Text>
+                  <Text style={styles.infoText}>{user && user.address}</Text>
                 </View>
 
                 {/* email, phone, bio */}
@@ -129,22 +129,22 @@ const UserHeader = ({user, router, handleLogout}) => {
                   <View style={styles.info}>
                     <Icon name='mail' size={20} color={theme.colors.textLight} />
                     <Text style={styles.infoText}>
-                      {user.user && user.email}
+                      {user && user.email}
                     </Text>
                   </View>
                   {
-                    user.user && user.user.phoneNumber && (
+                    user && user.phoneNumber && (
                       <View style={styles.info}>
                         <Icon name='call' size={20} color={theme.colors.textLight} />
                         <Text style={styles.infoText}>
-                          {user && user.user.phoneNumber}
+                          {user && user.phoneNumber}
                         </Text>
                       </View>
                     )
                   }
                   {
-                    user.user && user.user.bio && (
-                      <Text style={styles.infoText}>{user.user.bio}</Text>
+                    user && user.bio && (
+                      <Text style={styles.infoText}>{user.bio}</Text>
                     )
                   }
                 </View>

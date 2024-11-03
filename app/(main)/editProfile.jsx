@@ -28,14 +28,13 @@ const EditProfile = () => {
     })
 
     useEffect(() => {
-        console.log(currentUser)
         if(currentUser){
             setUser({
-                name: currentUser.profile.name || '',
-                phoneNumber: currentUser.profile.phoneNumber || '',
-                image: currentUser.profile.image || null,
-                address: currentUser.profile.address || '',
-                bio: currentUser.profile.bio || '',
+                name: currentUser.name || '',
+                phoneNumber: currentUser.phoneNumber || '',
+                image: currentUser.image || null,
+                address: currentUser.address || '',
+                bio: currentUser.bio || '',
             });
         }
     }, [currentUser])
@@ -72,7 +71,7 @@ const EditProfile = () => {
         }
 
         //update user
-        const res = await updateUser(currentUser.profile?.id, userData);
+        const res = await updateUser(currentUser?.id, userData);
         setLoading(false);
 
         if(res.success){

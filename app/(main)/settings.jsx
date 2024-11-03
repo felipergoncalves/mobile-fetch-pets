@@ -1,4 +1,4 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import ScreenWrapper from '../../components/ScreenWrapper';
@@ -11,22 +11,17 @@ import { theme } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
 import Avatar from '../../components/Avatar';
 import Navigator from '../../components/Navigator';
-import { logout } from '../../services/userService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Settings = () => {
-    const {user, setAuth, setUserData} = useAuth();
+    const {user, setAuth} = useAuth();
     const router = useRouter()
     
     const onLogout = async () =>{
-      const {success} = await logout();
-      console.log("[SETTINGS] Logout: ", success)
-      if(!success){
+      // setAuth(null);
+      const {error} = await supabase.auth.signOut();
+      if(error){
         Alert.alert('Sair', "Erro ao sair!");
-        return
       }
-      await AsyncStorage.removeItem('@auth_token');
-      router.replace('/welcome');
     }
 
     const handleLogout = async() => {
@@ -66,13 +61,13 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={styles.settingsSection}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user.user?.image}
+                    uri={user?.image}
                     size={hp(5)}
                     rounded={theme.radius.xxl*5}
                   />
                   {/* username and address */}
                   <View style={{marginLeft: 10}}>
-                    <Text style={styles.userName}>{user.user && user.user.name}</Text>
+                    <Text style={styles.userName}>{user && user.name}</Text>
                   </View>
                 </View>
               </View>
@@ -84,11 +79,11 @@ const UserHeader = ({user, router, handleLogout}) => {
                         <Text style={styles.actionText}>Editar perfil</Text>
                     </Pressable>
                     <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
-                        <Icon name="edit" color={"black"} />
+                    <Image style={{ height: hp(3), width: "7%", alignSelf: "center"}} resizeMode='contain' source={require('../../assets/images/paw.png')} />
                         <Text style={styles.actionText}>Pets para adoção</Text>
                     </Pressable>
                     <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
-                        <Icon name="edit" color={"black"} />
+                    <Image style={{ height: hp(3), width: "7%", alignSelf: "center"}} resizeMode='contain' source={require('../../assets/images/paw.png')} />
                         <Text style={styles.actionText}>Pets adotados</Text>
                     </Pressable>
                 </View>
@@ -111,6 +106,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   headerContainer:{
+    padding: wp(2),
     marginHorizontal: wp(4),
     marginBottom: 20
   },

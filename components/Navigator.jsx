@@ -22,10 +22,10 @@ const Navigator = ({ user }) => {
   }
 
   useEffect(() =>{
-    if (!user) return;
+
     let notificationChannel = supabase
     .channel('notifications')
-    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverId=eq.${user.user.id}`}, handleNewNotification)
+    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverId=eq.${user.id}`}, handleNewNotification)
     .subscribe();
     
     return ()=>{
@@ -53,15 +53,8 @@ const Navigator = ({ user }) => {
             name="heart"
             size={hp(3.2)}
             strokeWidth={2}
-            color={isRouteActive('notifications') ? theme.colors.primary : theme.colors.text}
+            color={isRouteActive('favoritePosts') ? theme.colors.primary : theme.colors.text}
           />
-          {
-            notificationCount > 0 && (
-              <View style={styles.pill}>
-                <Text style={styles.pillText}>{notificationCount}</Text>
-              </View>
-            )
-          }
         </Pressable>
 
         <Pressable onPress={() => router.push('newPost')}>
@@ -73,15 +66,24 @@ const Navigator = ({ user }) => {
           />
         </Pressable>
 
-        <Pressable onPress={() => router.push('profile')}>
+        {/* <Pressable onPress={() => router.push('profile')}>
           <Avatar
-            uri={user.user?.image}
+            uri={user?.image}
             size={hp(4.3)}
             rounded={theme.radius.sm}
             style={{
               borderWidth: 2,
               borderColor: isRouteActive('profile') ? theme.colors.primary : theme.colors.text,
             }}
+          />
+        </Pressable> */}
+
+        <Pressable onPress={() => router.push('chatList')}>
+          <Icon
+            name="chat"
+            size={hp(3.2)}
+            strokeWidth={2}
+            color={isRouteActive('chatList') ? theme.colors.primary : theme.colors.text}
           />
         </Pressable>
 
@@ -105,7 +107,7 @@ const styles = {
     justifyContent: 'center',
     position: 'absolute',
     bottom: 0,
-    padding: hp(1),
+    padding: hp(2),
     width: '100%',
     zIndex: 1000,
     shadowColor: theme.colors.textLight,
@@ -123,22 +125,6 @@ const styles = {
     alignItems: 'center',
     gap: 18
   },
-  pill:{
-    position: 'absolute',
-    right: -10,
-    top: -4,
-    height: hp(2.2),
-    width: hp(2.2),
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
-    backgroundColor: theme.colors.roseLight
-  },
-  pillText:{
-    color: "white",
-    fontSize: hp(1.2),
-    fontWeight: theme.fonts.bold
-  }
 };
 
 export default Navigator;

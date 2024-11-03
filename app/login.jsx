@@ -122,7 +122,7 @@ const login = () => {
             </View>
             <Text style={{textAlign:'center', top: -40, fontSize: hp(1.6)}}>Ou</Text>
             {/* Google Button */}
-            <GoogleButton style={styles.googleButton}/>
+            {/* <GoogleButton style={styles.googleButton}/> */}
         </View>
         <Image style={[styles.dogImage, keyboardVisible && styles.imageWithKeyboard]} resizeMode='stretch' source={require('../assets/images/loginDog.png')} />
     </ScreenWrapper>
