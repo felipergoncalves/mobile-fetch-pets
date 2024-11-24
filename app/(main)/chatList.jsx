@@ -1,6 +1,13 @@
 import React from 'react';
 import { View, Text, Pressable, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
+import Header from '../../components/Header';
+import { hp, wp } from '../../helpers/common';
+import ScreenWrapper from '../../components/ScreenWrapper';
+import Navigator from '../../components/Navigator';
+import { useAuth } from '../../contexts/AuthContext';
+import Avatar from '../../components/Avatar';
+import { theme } from '../../constants/theme';
 
 const mockConversations = [
   { id: '1', username: 'Alice' },
@@ -9,6 +16,7 @@ const mockConversations = [
 ];
 
 const ChatList = () => {
+  const {user, setAuth} = useAuth();
   const router = useRouter();
   const userId = '123'; // ID fictício do usuário atual
 
@@ -20,19 +28,31 @@ const ChatList = () => {
           params: { userId: userId, contactId: item.id, contactName: item.username },
         })
       }
-      style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc' }}
+      style={{ padding: 15, flexDirection: "row", gap: 10}}
     >
-      <Text style={{ fontSize: 18 }}>{item.username}</Text>
+      <Avatar />
+      <View>
+        <Text style={{ fontSize: hp(2.3), fontWeight: theme.fonts.medium}}>{item.username}</Text>
+        <Text style={{ fontSize: hp(1.7), color: theme.colors.text}}>Última mensagem enviada aqui</Text>
+      </View>
     </Pressable>
   );
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
-      <FlatList
-        data={mockConversations}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-      />
+    <View style={{flex: 1, backgroundColor:"white"}}>
+      <ScreenWrapper>
+        <View style={{paddingHorizontal: wp(4)}}>
+          <View>
+            <Header title="Conversas" mb={30}/>
+          </View>
+          <FlatList
+            data={mockConversations}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+          />
+        </View>
+      </ScreenWrapper>
+      <Navigator user={user}/>
     </View>
   );
 };
