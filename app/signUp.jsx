@@ -21,7 +21,6 @@ const signUpPage = () => {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [image, setImage] = useState(null);
     const [newUser, setNewUser] = useState({
             name: "",
             email: "",
@@ -328,7 +327,7 @@ const signUpPage = () => {
                           <Image style={styles.logoImage} resizeMode='contain' source={require('../assets/images/CadastroSuccess.png')} />
 
                       </View>
-                    <Button title={"Voltar ao Login"} buttonStyle={styles.textButton} onPress={() => router.push('/login')} />
+                    <Button title={"Voltar ao Login"} buttonStyle={styles.textButton} onPress={() => router.replace('/login')} />
                   </>
               )}
         </View>

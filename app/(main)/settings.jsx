@@ -1,6 +1,6 @@
 import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth, setUserData } from '../../contexts/AuthContext'
 import ScreenWrapper from '../../components/ScreenWrapper';
 import { useRouter } from 'expo-router';
 import Header from '../../components/Header';
@@ -11,17 +11,20 @@ import { theme } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
 import Avatar from '../../components/Avatar';
 import Navigator from '../../components/Navigator';
+import { logout } from '../../services/userService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Settings = () => {
     const {user, setAuth} = useAuth();
     const router = useRouter()
     
     const onLogout = async () =>{
-      // setAuth(null);
-      const {error} = await supabase.auth.signOut();
+      const { error } = await logout(); 
       if(error){
         Alert.alert('Sair', "Erro ao sair!");
       }
+      await AsyncStorage.removeItem('@auth_token');
+      router.replace('/welcome');
     }
 
     const handleLogout = async() => {
@@ -61,13 +64,13 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={styles.settingsSection}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user?.image}
+                    uri={user.user?.image}
                     size={hp(5)}
                     rounded={theme.radius.xxl*5}
                   />
                   {/* username and address */}
                   <View style={{marginLeft: 10}}>
-                    <Text style={styles.userName}>{user && user.name}</Text>
+                    <Text style={styles.userName}>{user && user.user.name}</Text>
                   </View>
                 </View>
               </View>

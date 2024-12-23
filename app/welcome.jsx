@@ -21,7 +21,7 @@ const Welcome = () => {
         {/* Title */}
         <View style={{gap:20}}>
             <Text style={styles.title}>Bem-vindo(a)!</Text>
-            <Text style={styles.subtitle}>Lorem Ipsum Lorem Ipsum Lorem Ipsum</Text>
+            <Text style={styles.subtitle}>Faça parte da comunidade Fetch Pets e ajude animais a encontrarem um lar cheio de amor!</Text>
         </View>
 
         {/* Footer */}
