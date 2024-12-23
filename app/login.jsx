@@ -1,4 +1,4 @@
-import { Alert, Pressable, StyleSheet, Text, View, Image, Keyboard } from 'react-native'
+import { Alert, Pressable, StyleSheet, Text, TouchableOpacity, View, Image, Keyboard } from 'react-native'
 import React, { useRef, useState, useEffect} from 'react'
 import ScreenWrapper from '../components/ScreenWrapper'
 import Home from '../assets/icons/Home'
@@ -11,10 +11,14 @@ import { hp, wp } from '../helpers/common'
 import Input from '../components/Input'
 import Button from '../components/Button'
 import GoogleButton from '../components/GoogleButton'
-import { supabase } from '../lib/supabase'
+import createAxiosInstance from '../constants/axiosInstance'
+import { useAuth } from '../contexts/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getUserData } from '../services/userService'
 
 const login = () => {
     const router = useRouter();
+    const {setAuth, setUserData} = useAuth();
     const emailRef = useRef("");
     const passwordRef = useRef("");
     const [loading, setLoading] = useState(false);
@@ -25,21 +29,38 @@ const login = () => {
             Alert.alert('Login', 'Por favor, preencha todos os campos!');
             return;
         }
-        
+
         let email = emailRef.current.trim();
         let password = passwordRef.current.trim();
-        setLoading(true)
-        const {error} = await supabase.auth.signInWithPassword({
+
+        const axiosInstance = await createAxiosInstance(); // Crie a instância do axios aqui
+
+        setLoading(true);
+
+        await axiosInstance.post('/auth/login', {
             email,
             password
+        }).then(async ({data}) => {
+            let userData = {};
+
+            userData = data.user;
+            const token = userData.token;
+            // Armazenar o token no AsyncStorage
+            await AsyncStorage.setItem('@auth_token', token);
+    
+            setAuth(userData);
+
+            // Atualizar os dados do usuário
+            let res = await getUserData(userData.user.id);
+            if(res.success) setUserData({...res.data, email});
+
+            router.replace('/home');
+        })
+        .catch((error) => {
+            Alert.alert('Login', error.message);
         });
 
         setLoading(false);
-
-        console.log('error: ', error);
-        if(error){
-            Alert.alert('Login', error.message);
-        }
     }
 
     useEffect(() => {
@@ -81,6 +102,12 @@ const login = () => {
                     Esqueceu sua senha?
                 </Text>
                 {/* Button */}
+                <TouchableOpacity
+                    onPress={() => router.push('/resetPassword')} // Ajuste a rota conforme necessário
+                    style={styles.button}
+                >
+                    <Text style={styles.buttonText}>Redefinir Senha</Text>
+                </TouchableOpacity>
                 <Button title={'Login'} loading={loading} styles={styles.loginButton} onPress={onSubmit} />
             </View>
 
@@ -95,7 +122,7 @@ const login = () => {
             </View>
             <Text style={{textAlign:'center', top: -40, fontSize: hp(1.6)}}>Ou</Text>
             {/* Google Button */}
-            <GoogleButton style={styles.googleButton}/>
+            {/* <GoogleButton style={styles.googleButton}/> */}
         </View>
         <Image style={[styles.dogImage, keyboardVisible && styles.imageWithKeyboard]} resizeMode='stretch' source={require('../assets/images/loginDog.png')} />
     </ScreenWrapper>

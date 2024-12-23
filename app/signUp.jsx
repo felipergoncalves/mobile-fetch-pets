@@ -1,130 +1,416 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useRef, useState } from 'react'
-import ScreenWrapper from '../components/ScreenWrapper'
-import Home from '../assets/icons/Home'
+import { TouchableOpacity, ScrollView, StyleSheet, Text, View, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native'
+import * as ImagePicker from 'expo-image-picker'
 import { theme } from '../constants/theme'
-import Icon from '../assets/icons'
-import { StatusBar } from 'expo-status-bar'
-import BackButton from '../components/BackButton'
 import { useRouter } from 'expo-router'
 import { hp, wp } from '../helpers/common'
+import { getAdressInformation } from '../services/userService'
+import { signUp } from '../services/userService'
+import ScreenWrapper from '../components/ScreenWrapper'
+import BackButton from '../components/BackButton'
 import Input from '../components/Input'
 import Button from '../components/Button'
-import { supabase } from '../lib/supabase'
+import PhoneInput from '../components/PhoneInput'
+import CustomSelect from '../components/CustomSelect'
+import CustomDatePicker from '../components/CustomDataPicker'
+import LoadingScreen from '../components/LoadingScreen'
+import Checkbox from '../components/CheckBox'
 
-const signUp = () => {
+const signUpPage = () => {
+    // Variables
     const router = useRouter();
-    const emailRef = useRef("");
-    const nameRef = useRef("");
-    const passwordRef = useRef("");
+    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [newUser, setNewUser] = useState({
+            name: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+            phone: "",
+            birthDate: "",
+            gender: "",
+            address: "",
+            stateAndCity: "",
+            zip: "",
+            image: "",
+            politycs: false
+    });
 
-    const onSubmit = async ()=> {
-        if(!emailRef.current || !passwordRef.current){
-            Alert.alert('Sign Up', 'Por favor, preencha todos os campos!');
+    // Functions
+    const handleStep = (newStep) => {
+        if(step === 1){
+            if(newUser.name == '' || newUser.email == '' || newUser.password == '' || newUser.confirmPassword == '' || newUser.phone == ''){
+                Alert.alert("Cadastro!","Por favor, preencha todos os campos!");
+                return;
+            }
+
+            if(newUser.password.length < 6){
+                Alert.alert("Cadastro", "A senha deve ter pelo menos 6 dígitos!");
+                return;
+            }
+
+            if(newUser.password !== newUser.confirmPassword){
+                Alert.alert("Cadastro", "As senhas não coincidem!");
+                return;
+            }
+        }
+        if(step === 2){
+            if (newUser.gender == '' || newUser.birthDate == '' || newUser.stateAndCity == '' || newUser.address == '' || newUser.zip == '') {
+                Alert.alert("Por favor, preencha todos os campos!");
+                return;
+            }
+        }
+        if(step === 3){
+            if(newUser.politycs == false){
+                Alert.alert("Por favor, aceite os termos de uso e a política de privacidade!");
+                return;
+            }
+        }
+        setStep(newStep);
+    }
+
+    const selectImage = async () => {
+
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert('Desculpe, precisamos da permissão para acessar as fotos.');
             return;
         }
-        
-        let name = nameRef.current.trim();
-        let email = emailRef.current.trim();
-        let password = passwordRef.current.trim();
 
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+    
+        if (!result.canceled) {
+            const { uri } = result.assets[0];
+            const filename = uri.substring(uri.lastIndexOf('/') + 1);
+            const extend = filename.split('.')[1];
+
+            setNewUser({...newUser, image: {uri: uri, name: filename, type: `image/${extend}`}});
+        }
+    };
+
+    const getCep = async (zip) => {
+
+        if (zip.length < 8) {
+            return;
+        }
+        setLoading(true);
+        const res = await getAdressInformation(zip);
+
+        if(res.success){
+            setNewUser({...newUser, stateAndCity: res.data.estado + "/" + res.data.localidade, address: res.data.logradouro, zip: zip});
+        }
+        
+        setLoading(false);
+    }
+
+    const onSubmit = async () => {
         setLoading(true);
 
-        const {data: {session}, error} = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    name
-                }
-            }
-        });
-        setLoading(false);
+        const res = await signUp(newUser);
 
-        // console.log('session: ', session)
-        // console.log('error: ', error)
-        if(error){
-            Alert.alert('Sign up', error.message);
+        if(!res.success){
+            Alert("Erro ao cadastrar!", res.msg);
+            setLoading(false);
+            setStep(1);
+            return;
         }
+
+        setLoading(false);
+        setStep(4);
     }
+
   return (
-    <ScreenWrapper bh={'white'}>
-        <StatusBar style="dark" />
+    <ScreenWrapper bg={'white'}>
         <View style={styles.container}>
-            <BackButton router={router}/>
-
-            <View>
-                <Text style={styles.welcomeText}>Olá,</Text>
-                <Text style={styles.welcomeText}>Bem Vindo!</Text>
+            {/* Loading Screen */}
+            {loading && <LoadingScreen />}
+            {/* Titulo - TOP */}
+            <View style={styles.titleContainer}>
+                <BackButton style={styles.buttonTitle} router={router}/>
+                <Text style={styles.title}>Cadastro</Text>
             </View>
+            {/* Inputs e outros */}
+              {step === 1 && (
+                  <>
+                      <KeyboardAvoidingView
+                          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                          style={styles.keyboardAvoidingView}
+                          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // ajuste conforme necessário
+                      >
+                          <ScrollView
+                              contentContainerStyle={styles.scrollViewContainer}
+                              keyboardShouldPersistTaps="handled"
+                          >
+                              <View style={[styles.containerView, {marginTop: 10}]}>
+                                  {/* Nome */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Nome
+                                  </Text>
+                                  <Input
+                                      onChangeText={(text) => setNewUser({ ...newUser, name: text })}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite seu Nome Completo"
+                                  />
+                                  {/* Phone */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Número de Telefone
+                                  </Text>
+                                  <PhoneInput
+                                      onCountryCodeChange={(value) => setNewUser({ ...newUser, phone: value })}
+                                      phoneValue={newUser.phone}
+                                      onPhoneChange={(value) => setNewUser({ ...newUser, phone: value })}
+                                      style={{ marginBottom: 10 }}
+                                  />
+                                  {/* Email */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      E-mail
+                                  </Text>
+                                  <Input
+                                      onChangeText={(text) => setNewUser({ ...newUser, email: text })}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite seu E-mail"
+                                      keyboardType="email-address"
+                                  />
+                                  {/* Senha */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Senha
+                                  </Text>
+                                  <Text style={styles.passwordCriteria}>
+                                      Senha deve ter pelo menos 6 dígitos
+                                  </Text>
+                                  <Input
+                                      secureTextEntry
+                                      onChangeText={(text) => setNewUser({ ...newUser, password: text })}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite sua senha"
+                                  />
+                                  {/* Confirme a Senha */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Confirme a senha
+                                  </Text>
+                                  <Input
+                                      secureTextEntry
+                                      onChangeText={(text) => setNewUser({ ...newUser, confirmPassword: text })}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite sua senha novamente"
+                                  />
+                              </View>
+                              <Button title={"Próximo Passo"} buttonStyle={styles.textButton} onPress={() => handleStep(2)} />
+                          </ScrollView>
+                      </KeyboardAvoidingView>
+                  </>
+              )
+              }
+              {step === 2 && (
+                  <>
+                      <KeyboardAvoidingView
+                          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                          style={styles.keyboardAvoidingView}
+                          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} // ajuste conforme necessário
+                      >
+                          <ScrollView
+                              contentContainerStyle={styles.scrollViewContainer}
+                              keyboardShouldPersistTaps="handled"
+                          >
+                            <View style={[styles.containerView, {marginTop: 10}]}>
+                                {/* Genero */}
+                                <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Gênero
+                                </Text>
+                                <CustomSelect 
+                                    options={["Masculino", "Feminino", "Outro", "Prefiro não dizer"]}
+                                    placeholder="Selecione uma opção" 
+                                    onSelect={(value) => setNewUser({ ...newUser, gender: value })}
+                                    style={{ marginBottom: 10 }} 
+                                />
 
-            {/* form */}
-            <View style={styles.form}>
-                <Input
-                    icon={<Icon name='user' size={26} strokeWidth={1.6} />}
-                    placeholder="Digite seu nome"
-                    onChangeText={value=> nameRef.current = value}
-                />
-                <Input
-                    icon={<Icon name='mail' size={26} strokeWidth={1.6} />}
-                    placeholder="Digite seu e-mail"
-                    onChangeText={value=> emailRef.current = value}
-                />
-                <Input
-                    icon={<Icon name='lock' size={26} strokeWidth={1.6} />}
-                    placeholder="Digite sua senha"
-                    secureTextEntry
-                    onChangeText={value=> passwordRef.current = value}
-                />
-                {/* Button */}
-                <Button title={'Cadastrar'} loading={loading} onPress={onSubmit} />
-            </View>
+                                {/* Data de Nascimento */}
+                                <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Data de Nascimento
+                                </Text>
+                                <CustomDatePicker
+                                    style={{ marginBottom: 10 }} 
+                                    placeholder='Selecione sua data de nascimento'
+                                    onDateChange={(value) => setNewUser({ ...newUser, birthDate: value })}
+                                />
 
-            {/* footer */}
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                    Já tem uma conta?
-                </Text>
-                <Pressable onPress={()=> router.push('login')}>
-                    <Text style={[styles.footerText, {color:theme.colors.primary, fontWeight:theme.fonts.semibold}]}>Entrar</Text>
-                </Pressable>
-            </View>
+                                {/* Estado / Cidade */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Estado/Cidade
+                                  </Text>
+                                  <Input
+                                      OnChangeText={(text) => setNewUser({ ...newUser, stateAndCity: text })}
+                                      value={newUser.stateAndCity}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite seu Estado/Cidade"
+                                  />
+                                {/* Endereço */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Endereço
+                                  </Text>
+                                  <Input
+                                      OnChangeText={(text) => setNewUser({ ...newUser, address: text })}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      value={newUser.address}
+                                      placeholder="Digite sua rua"
+                                  />
+                                {/* CEP */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      CEP
+                                  </Text>
+                                  <Input
+                                      onChangeText={async (text) => {await getCep(text)}}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite seu CEP"
+                                      keyboardType="number-pad"
+                                  />
+                                {/* Numero */}
+                                  <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                      Número
+                                  </Text>
+                                  <Input
+                                      OnChangeText={(text) => setNewUser({ ...newUser, address: text })}
+                                      containerStyle={{ marginBottom: 10 }}
+                                      placeholder="Digite número da sua casa ou apartamento"
+                                      keyboardType="number-pad"
+                                  />
+                            </View>
+                            <Button title={"Próximo Passo"} buttonStyle={styles.textButton} onPress={() => handleStep(3)} />
+                          </ScrollView>
+                      </KeyboardAvoidingView>
+                  </>
+              )}
+              {step === 3 && (
+                  <>
+                      <View style={[styles.containerView, { marginTop: 10 }]}>
+                          {/* Foto */}
+
+                          <Text style={styles.subtitle}>
+                              Ei, que tal colocar uma foto no seu perfil?
+                              (Opcional)
+                          </Text>
+
+                          <View style={styles.imageView}>
+                              <TouchableOpacity onPress={ async () => {
+                                await selectImage();
+                              }}>
+                                  <Image
+                                      style={styles.logoImage}
+                                      source={newUser.image ? { uri: newUser.image.uri } : require('../assets/images/UploadFoto.png')}
+                                  />
+                              </TouchableOpacity>
+                          </View>
+
+                          <Text style={[styles.subtitle, {marginTop: 20}]}>
+                              Tamanho máximo de 5MB
+                          </Text>
+
+                          <Checkbox
+                                label="Eu li e concordo com os Termos de Uso e a Política de Privacidade."
+                                checked={newUser.politycs}
+                                onChange={(value) => setNewUser({ ...newUser, politycs: value })}
+                          />
+                      </View>
+                      <Button title={"Finalizar Cadastro"} buttonStyle={styles.textButton} onPress={ async () => await onSubmit()} />
+                  </>
+              )}
+              {step === 4 && (
+                  <>
+                      <View style={styles.containerView}>
+                          <Text style={styles.subtitle}>
+                          Seu cadastro foi concluído com sucesso! Bem-vindo(a)!
+                          </Text>
+                          <Image style={styles.logoImage} resizeMode='contain' source={require('../assets/images/CadastroSuccess.png')} />
+
+                      </View>
+                    <Button title={"Voltar ao Login"} buttonStyle={styles.textButton} onPress={() => router.replace('/login')} />
+                  </>
+              )}
         </View>
     </ScreenWrapper>
   )
 }
 
-export default signUp
+export default signUpPage
 
 const styles = StyleSheet.create({
-    container:{
+    container: {
         flex: 1,
-        gap: 45,
-        paddingHorizontal: wp(5),
+        padding: 20,
+        backgroundColor: "#fff",
+        alignItems: "center",
+        height: "100%",
+        width: "100%",
     },
-    welcomeText:{
-        fontSize: hp(4),
-        fontWeight: theme.fonts.bold,
-        color: theme.colors.text,
+    titleContainer: {
+        width: "100%",
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginBottom: 20,
     },
-    form:{
-        gap: 25,
+    buttonTitle: {
+        position: "relative",
+        right: 0,
+        marginTop: 50,
     },
-    forgotPassword:{
-        textAlign: 'right',
-        fontWeight: theme.fonts.semibold,
-        color: theme.colors.text
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
+        color: "#333",
+        width: "100%",
     },
-    footer:{
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 5,
+    keyboardAvoidingView: {
+        flex: 1,
+        width: "100%",
     },
-    footerText:{
-        textAlign: 'center',
-        color: theme.colors.text,
-        fontSize: hp(1.6)
+    scrollViewContainer: {
+        flexGrow: 1,
+        justifyContent: "center", // Centraliza os itens quando o teclado não está aberto
+        width: "100%",
+    },
+    textButton: {
+        color: "#fff",
+        fontSize: 18,
+        width: "100%",
+        marginBottom: 50,
+    },
+    containerView: {
+        flex: 1,
+        alignItems: "center",
+        height: "100%",
+        width: "100%",
+    },
+    subtitle: {
+        fontSize: 16,
+        color: "#666",
+        textAlign: "center",
+        marginBottom: 20,
+        paddingHorizontal: 20,
+    },
+    logoImage: {
+        height: '100%',
+        width: '100%',
+        alignSelf: "center",
+        resizeMode: 'cover',
+        zIndex: 3,
+        borderRadius: theme.radius.sm
+    },
+    imageView: {
+        width: "100%",
+        height: "60%",
+        backgroundColor: "#3198F4",
+        borderRadius: theme.radius.sm
+    },
+    passwordCriteria: {
+        width: '100%',
+        fontSize: 12,
+        marginBottom: 5,
+        fontWeight: '400',
+        color: '#a3a3a3',
     }
 })

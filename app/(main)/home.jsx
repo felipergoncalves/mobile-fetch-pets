@@ -142,7 +142,7 @@ const Home = () => {
   // }
 
   // console.log('user: ', user);
-
+  
   return (
     <View style={{flex: 1}}>
       <ScreenWrapper bg="white">

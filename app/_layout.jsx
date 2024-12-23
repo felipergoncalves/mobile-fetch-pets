@@ -4,6 +4,8 @@ import { Stack, useRouter } from 'expo-router'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getUserData } from '../services/userService'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import createAxiosInstance from '../constants/axiosInstance'
 
 const _layout = () => {
   return(
@@ -14,26 +16,31 @@ const _layout = () => {
 }
 
 const MainLayout = () => {
-  const {setAuth, setUserData} = useAuth();
+  const {user, setAuth, setUserData} = useAuth();
   const router = useRouter();
 
   useEffect(()=>{
-    supabase.auth.onAuthStateChange((_event, session) => {
-      // console.log('session user: ', session?.user);
-
-      if(session){
-        setAuth(session?.user);
-        updateUserData(session?.user, session?.user?.email);
-        router.replace('/home');
-      }else{
-        setAuth(null);
-        router.replace('/welcome');
-      }
-    })
+    checkAuth();
   }, [])
 
+  const checkAuth = async () => {
+    const axios = await createAxiosInstance();
+
+    axios.get('/auth/check')
+    .then(({data}) => {
+      setAuth(data.user);
+      updateUserData(data.user.user, data.user.user.email);
+      router.replace('/home');
+    })
+    .catch((error) => {
+      console.log('[CHECK AUTH] Error: ', error);
+      setAuth(null);
+      router.replace('/welcome');
+    });
+  }
+
   const updateUserData = async (user, email) => {
-    let res = await getUserData(user?.id);
+    let res = await getUserData(user.id);
     if(res.success) setUserData({...res.data, email});
   }
 
