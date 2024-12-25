@@ -1,5 +1,5 @@
 import createAxiosInstance from "../constants/axiosInstance";
-import { supabase } from "../lib/supabase";
+import { uploadImage } from "./ImageService";
 
 export const getUserData = async (userId) => {
     const axios = await createAxiosInstance();
@@ -46,12 +46,9 @@ export const updateUser = async (userId, data)=>{
 
 export const signUp = async (data) => {
     const axios = await createAxiosInstance();
+    console.log('[UserService] signUp');	
 
     const formData = new FormData();
-
-    if (data.image) {
-        formData.append('image', JSON.parse(JSON.stringify(data.image)));
-    }
 
     formData.append('birthDate', data.birthDate.toISOString());
 
@@ -62,18 +59,33 @@ export const signUp = async (data) => {
         }
     }
 
-    return await axios.post('/auth/signup', formData, {
+    // Enviando requisição - Cadastro
+    const res =  await axios.post('/auth/signup', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
-    })
-    .then(({ data }) => {
+    });
+
+    if (res.data.error) {
+        return {success: false, msg: res.data.error.message};
+    }
+
+    // Envia a Imagem para o supabase
+    const {data:imageUpdated ,error} = await uploadImage(data.image, 'profiles', res.data.token);
+
+    if (error) {
+        return {success: false, msg: error.message};
+    }
+    console.log('Salvando no banco...')
+    // Salvar no banco a referencia da imagem
+    return await axios.post('/auth/save-image', {token: res.data.token, image: imageUpdated, uid: res.data.user.id})
+    .then(({data}) => {
         return { success: true };
     })
     .catch((error) => {
-        console.error("Erro ao enviar a requisição:", error);
-        return { success: false, msg: error.message };
+        return {success: false, msg: error.message};
     });
+
 }
 
 export const sendResetPassword = async (email) => {
