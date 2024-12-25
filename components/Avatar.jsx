@@ -13,7 +13,7 @@ const Avatar = ({
 }) => {
   return (
     <Image
-        source={getImageSrc(uri)}
+        source={uri}
         transition={100}
         style={[styles.avatar, {height: size, width: size, borderRadius: rounded}, style]}
     />

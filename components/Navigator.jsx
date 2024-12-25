@@ -5,7 +5,6 @@ import Avatar from './Avatar';
 import Icon from '../assets/icons';
 import { theme } from '../constants/theme';
 import { hp, wp } from '../helpers/common';
-import { supabase } from '../lib/supabase';
 
 const Navigator = ({ user }) => {
   const router = useRouter();
@@ -20,18 +19,6 @@ const Navigator = ({ user }) => {
       setNotificationCount(prev=>prev+1);
     }
   }
-
-  useEffect(() =>{
-
-    let notificationChannel = supabase
-    .channel('notifications')
-    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverId=eq.${user.id}`}, handleNewNotification)
-    .subscribe();
-    
-    return ()=>{
-      supabase.removeChannel(notificationChannel);
-    }
-  }, [])
 
   return (
     <View style={styles.header}>

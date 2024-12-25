@@ -8,7 +8,6 @@ import { hp, wp } from '../../helpers/common';
 import { TouchableOpacity } from 'react-native';
 import Icon from '../../assets/icons';
 import { theme } from '../../constants/theme';
-import { supabase } from '../../lib/supabase';
 import Avatar from '../../components/Avatar';
 import Navigator from '../../components/Navigator';
 import { logout } from '../../services/userService';
@@ -42,7 +41,6 @@ const Settings = () => {
         }
       ])
     }
-
   return (
     <View style={{flex: 1}}>
         <ScreenWrapper bg="white">
@@ -52,7 +50,6 @@ const Settings = () => {
     </View>
   )
 }
-
 const UserHeader = ({user, router, handleLogout}) => {
     return(
         <View style={{flex: 1, backgroundColor:"white", paddingHorizontal: wp(4)}}>
@@ -64,7 +61,7 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={styles.settingsSection}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user.user?.image}
+                    uri={user.user.image}
                     size={hp(5)}
                     rounded={theme.radius.xxl*5}
                   />

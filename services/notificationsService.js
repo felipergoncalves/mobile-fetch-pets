@@ -1,4 +1,3 @@
-import { supabase } from "../lib/supabase";
 
 export const createNotification = async (notification)=>{
     try{

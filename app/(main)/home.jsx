@@ -2,7 +2,6 @@ import { FlatList, StyleSheet, View, Text, Image, Pressable, ScrollView } from '
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../lib/supabase'
 import { hp, wp } from '../../helpers/common'
 import { theme } from '../../constants/theme'
 import { useRouter } from 'expo-router'
@@ -24,12 +23,6 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
   const [filter, setFilter] = useState(null);
-
-  const handleNewNotification = async (payload) => {
-    if(payload.eventType == "INSERT" && payload.new.id){
-      setNotificationCount(prev=>prev+1);
-    }
-  }
 
   useEffect(() => {
     // Carregar posts ao iniciar a página
@@ -55,73 +48,6 @@ const Home = () => {
     setIsLoading(false);
    }
   };
-
-  useEffect(() =>{
-
-    let notificationChannel = supabase
-    .channel('notifications')
-    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filter: `receiverId=eq.${user.id}`}, handleNewNotification)
-    .subscribe();
-    
-    return ()=>{
-      supabase.removeChannel(notificationChannel);
-    }
-  }, [])
-
-  const handlePostEvent = async (payload)=>{
-    if(payload.eventType == 'INSERT' && payload?.new?.id){
-      let newPost = {...payload.new};
-     
-
-      try{
-        let res = await getUserData(newPost.userId);
-        newPost.postLikes = [];
-        newPost.comments = [{count: 0}];
-        newPost.user = res.success? res.data:{};
-        setPosts(prevPosts=> [newPost, ...prevPosts]);
-      }catch(err){
-        console.error(err);
-      }
-    }
-    if(payload.eventType=="DELETE" && payload.old.id){
-      setPosts(prevPosts=> {
-        let updatedPosts = prevPosts.filter(post=>post.id!=payload.old.id);
-        return updatedPosts;
-      })
-    }
-    if(payload.eventType=="UPDATE" && payload?.new?.id){
-      setPosts(prevPosts=>{
-        let updatedPosts = prevPosts.map(post=>{
-          if(post.id==payload.new.id){
-            post.body = payload.new.body;
-            post.file = payload.new.file;
-          }
-          return post;
-        });
-        return updatedPosts;
-      });
-    }
-  }
-
-  useEffect(() =>{
-
-    let postChannel = supabase
-    .channel('posts')
-    .on('postgres_changes', {event: '*', schema: 'public', table: 'posts'}, handlePostEvent)
-    .subscribe();
-    
-    // getPosts();
-    
-    // let notificationChannel = supabase
-    // .channel('notifications')
-    // .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notifications', filtler: `receiver=eq.${user.id}`}, handleNewNotification)
-    // .subscribe();
-    
-    return ()=>{
-      supabase.removeChannel(postChannel);
-      // supabase.removeChannel(notificationChannel);
-    }
-  }, [])
 
   // const handleFilterChange = (newFilter) => {
   //   // setFilter(newFilter);

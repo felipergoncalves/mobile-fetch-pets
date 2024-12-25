@@ -6,7 +6,7 @@ import { theme } from '../../constants/theme'
 import Header from '../../components/Header'
 import { Image } from 'expo-image'
 import { useAuth } from '../../contexts/AuthContext'
-import { getImageSrc, uploadFile } from '../../services/ImageService'
+import { getImageSrc, uploadImage } from '../../services/ImageService'
 import Input from '../../components/Input'
 import Icon from '../../assets/icons'
 import Button from '../../components/Button'
@@ -64,7 +64,7 @@ const EditProfile = () => {
         //if true, it means that the user picked a local image
         if(typeof image == 'object'){
             //upload image
-            let imageRes = await uploadFile('profiles', image?.uri, true);
+            let imageRes = await uploadImage('profiles', image?.uri, true);
             if(imageRes.success) userData.image = imageRes.data;
             else userData.image = null;
         }

@@ -10,7 +10,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import Loading from '../../components/Loading';
 import Icon from '../../assets/icons';
 import CommentItem from '../../components/CommentItem';
-import { supabase } from '../../lib/supabase';
 import { getUserData } from '../../services/userService';
 import PostCardDetails from '../../components/PostCardDetails';
 
@@ -38,25 +37,6 @@ const PostDetails = () => {
         })
       }
     }
- 
-    useEffect(() =>{
-
-      let commentChannel = supabase
-      .channel('comments')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'comments',
-        filter: `postId=eq.${postId}`
-      }, handleNewComment)
-      .subscribe();
-  
-      getPostDetails();
-  
-      return ()=>{
-        supabase.removeChannel(commentChannel);
-      }
-    }, [])
 
     const getPostDetails = async ()=> {
         //fetch post details here
