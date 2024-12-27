@@ -67,14 +67,14 @@ const UserHeader = ({user, router, handleLogout}) => {
                   />
                   {/* username and address */}
                   <View style={{marginLeft: 10}}>
-                    <Text style={styles.userName}>{user && user.user.name}</Text>
+                    <Text style={styles.userName}>{user.user && user.user.name}</Text>
                   </View>
                 </View>
               </View>
               <View style={{gap: 20}}>
                 <Text style={{fontSize: hp(1.8), color:theme.colors.dark}}>Configurações da conta</Text>
                 <View style={{gap: 20, paddingHorizontal: 15}}>
-                    <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push({pathname: 'signUp', params: {isUpdate: 'true'}})}>
                         <Icon name="edit" color={"black"} />
                         <Text style={styles.actionText}>Editar perfil</Text>
                     </Pressable>

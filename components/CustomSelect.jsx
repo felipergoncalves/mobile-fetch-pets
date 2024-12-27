@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import { theme } from '../constants/theme';
 
-const CustomSelect = ({ options, placeholder, onSelect, style }) => {
+const CustomSelect = ({ options, placeholder, onSelect, style, value }) => {
     const [selectedValue, setSelectedValue] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
+
+    if (value && !selectedValue) {
+        setSelectedValue(value);
+    }
 
     const handleSelect = (item) => {
         setSelectedValue(item);

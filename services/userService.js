@@ -26,22 +26,49 @@ export const logout = async () => {
     });
 }
 
-export const updateUser = async (userId, data)=>{
-    try{
-        const {error} = await supabase
-        .from('users')
-        .update(data)
-        .eq('id', userId);
+export const updateUser = async (data)=>{
+    const axios = await createAxiosInstance();
 
-        if(error){
-            return {success: false, msg: error.message};
-        }else{
-            return {success: true, data};
+    const formData = new FormData();
+
+    formData.append('birthDate', data.birthDate.toISOString());
+
+    // Adicionando outros campos
+    for (const key in data) {
+        if (data.hasOwnProperty(key) && key !== 'image' && key !== 'birthDate') {
+            formData.append(key, data[key]);
         }
-    }catch(error){
-        console.log("Got error: ", error);
+    }
+
+    // Enviando requisição - Cadastro
+    const res =  await axios.put('/auth/update', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+
+    if (res.data.error) {
+        return {success: false, msg: res.data.error.message};
+    }
+
+    // Envia a Imagem para o supabase
+    const {data:imageUpdated ,error} = await uploadImage(data.image, 'profiles', res.data.token);
+
+    if (error) {
         return {success: false, msg: error.message};
     }
+
+    console.log('Salvando no banco...')
+
+    // Salvar no banco a referencia da imagem
+
+    return await axios.post('/auth/save-image', {token: res.data.token, image: imageUpdated, uid: res.data.user.id})
+    .then(({data}) => {
+        return { success: true };
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
 }
 
 export const signUp = async (data) => {

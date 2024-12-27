@@ -1,12 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
 import { hp } from '../helpers/common';
 import { theme } from '../constants/theme'
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const CustomDatePicker = ({ placeholder = "Selecione uma data", onDateChange, style }) => {
+const CustomDatePicker = ({ placeholder = "Selecione uma data", onDateChange, style, value }) => {
     const [showPicker, setShowPicker] = useState(false);
     const [date, setDate] = useState(null);
+
+    // Sincroniza o estado da data com o valor recebido como prop
+    useEffect(() => {
+        if (value) {
+            const [day, month, year] = value.split('/').map(Number);
+            const newData = new Date(year, month - 1, day);
+            setDate(newData);
+        }
+    }, [value]); // Atualiza apenas quando `value` mudar
 
     const handleConfirm = (event, selectedDate) => {
         setShowPicker(Platform.OS === 'ios');

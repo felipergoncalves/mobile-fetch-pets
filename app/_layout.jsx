@@ -27,6 +27,7 @@ const MainLayout = () => {
 
     axios.get('/auth/check')
     .then(({data}) => {
+      // console.log('[CHECK AUTH] Data: ', data);
       setAuth(data.user);
       updateUserData(data.user.user, data.user.user.email);
       router.replace('/home');

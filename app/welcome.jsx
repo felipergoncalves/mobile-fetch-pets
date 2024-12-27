@@ -29,7 +29,7 @@ const Welcome = () => {
             <Button 
                 title="Vamos lá"
                 buttonStyle={{marginHorizontal: wp(3), backgroundColor: "#59C1A3"}}
-                onPress={()=> router.push('signUp')}
+                onPress={()=> router.push({pathname: 'signUp', params: {isUpdate: false}})}
             />
             <View style={styles.bottomTextContainer}>
                 <Text style={styles.loginText}>
