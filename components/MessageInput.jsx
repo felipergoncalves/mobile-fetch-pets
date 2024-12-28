@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
+import Icon from '../assets/icons';
+import { theme } from '../constants/theme';
+import { hp } from '../helpers/common';
 
 const MessageInput = ({ onSendMessage }) => {
   const [message, setMessage] = useState('');
@@ -19,7 +22,9 @@ const MessageInput = ({ onSendMessage }) => {
         value={message}
         onChangeText={setMessage}
       />
-      <Button title="Enviar" onPress={handleSend} />
+      <View style={{backgroundColor: theme.colors.primary, padding: hp(1), borderRadius: 12}}>
+        <Icon name="send" color={theme.colors.white} onPress={handleSend}/>
+      </View>
     </View>
   );
 };
@@ -32,9 +37,11 @@ const styles = StyleSheet.create({
   },
   input: { 
     flex: 1, 
-    borderColor: '#ccc', 
-    borderWidth: 1, 
-    padding: 10, 
+    backgroundColor: "#f3f6f6",
+    // borderColor: '#ccc', 
+    // borderWidth: 1, 
+    paddingVertical: 10, 
+    paddingHorizontal: 18, 
     borderRadius: 20, 
     marginRight: 10 
   },

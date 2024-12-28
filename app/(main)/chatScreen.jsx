@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import MessageInput from '../../components/MessageInput';
+import ScreenWrapper from '../../components/ScreenWrapper';
+import Header from '../../components/Header';
+import { hp, wp } from '../../helpers/common';
+import { theme } from '../../constants/theme';
+import Icon from '../../assets/icons';
 
 const ChatScreen = () => {
   const router = useRouter();
@@ -28,14 +33,27 @@ const ChatScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Conversa com {contactName}</Text>
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
-      />
-      <MessageInput onSendMessage={handleSend} />
+    <View style={{flex: 1, backgroundColor:"white"}}>
+      <ScreenWrapper>
+        <View style={{flex: 1, paddingHorizontal: wp(4), paddingVertical: wp(4)}}>
+          <View style={{display: "flex", flexDirection: "row", }}>
+            <View style={{ width: "90%"}}>
+              <Header title="{contactName}" mb={30}/>
+            </View>
+            <View style={{ width: "10%", alignItems: "flex-end", justifyContent: "center", height: 30, marginTop: 5}}>
+              <Icon name="threeDotsVertical" color={theme.colors.dark} onPress={handleSend} />
+            </View>
+          </View>
+          <FlatList
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessage}
+          />
+        </View>
+      </ScreenWrapper>
+      <View style={{backgroundColor: "#fcfcfc", paddingVertical: wp(4)}}>
+        <MessageInput onSendMessage={handleSend} />
+      </View>
     </View>
   );
 };

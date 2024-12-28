@@ -26,6 +26,7 @@ import Settings from './Settings';
 import FilterHorizontalIcon from './FilterHorizontalIcon'
 import Notification from './Notification';
 import Chat from './Chat';
+import ThreeDotsVertical from './ThreeDotsVertical';
 
 const icons = {
     home: Home,
@@ -53,6 +54,7 @@ const icons = {
     filterHorizontalIcon: FilterHorizontalIcon,
     notification: Notification,
     chat: Chat,
+    threeDotsVertical: ThreeDotsVertical
 }
 
 const Icon = ({name, ...props}) => {
