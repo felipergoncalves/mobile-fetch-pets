@@ -163,6 +163,20 @@ const signUpPage = () => {
         setStep(4);
     }
 
+    const getCep = async (zip) => {
+        if (zip.length < 8) {
+            return;
+        }
+        setLoading(true);
+        const res = await getAdressInformation(zip);
+
+        setLoading(false);
+        
+        if (res.success) {
+            setNewUser({ ...newUser, stateAndCity: res.data.estado + "/" + res.data.localidade, address: res.data.logradouro, zip: zip });
+        }
+    }
+
     return (
         <ScreenWrapper bg={'white'}>
             <View style={styles.container}>
