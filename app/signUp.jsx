@@ -21,7 +21,7 @@ const signUpPage = () => {
     // Variables
     const router = useRouter();
     const { user } = useAuth();
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(2);
     const [loading, setLoading] = useState(false);
     const [newUser, setNewUser] = useState({
         name: "",
@@ -167,6 +167,7 @@ const signUpPage = () => {
         if (zip.length < 8) {
             return;
         }
+        newUser.zip = zip;
         setLoading(true);
         const res = await getAdressInformation(zip);
 
@@ -326,7 +327,6 @@ const signUpPage = () => {
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu CEP"
                                         keyboardType="number-pad"
-                                        value={newUser.zip}
                                     />
                                     {/* Numero */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
