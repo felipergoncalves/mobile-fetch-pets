@@ -171,7 +171,7 @@ const signUpPage = () => {
         const res = await getAdressInformation(zip);
 
         setLoading(false);
-        
+
         if (res.success) {
             setNewUser({ ...newUser, stateAndCity: res.data.estado + "/" + res.data.localidade, address: res.data.logradouro, zip: zip });
         }
@@ -322,7 +322,7 @@ const signUpPage = () => {
                                         CEP
                                     </Text>
                                     <Input
-                                        onChangeText={async (text) => setNewUser({ ...newUser, zip: text })}
+                                        onChangeText={async (text) => { await getCep(text) }}
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu CEP"
                                         keyboardType="number-pad"
