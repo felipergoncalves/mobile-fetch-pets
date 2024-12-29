@@ -47,7 +47,7 @@ const login = () => {
             const token = userData.token;
             // Armazenar o token no AsyncStorage
             await AsyncStorage.setItem('@auth_token', token);
-            console.log(userData);
+            // console.log(userData);
             setAuth(userData);
 
             // Atualizar os dados do usuário

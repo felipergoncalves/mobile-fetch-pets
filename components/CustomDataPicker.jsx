@@ -1,18 +1,21 @@
 import React, { useState, useEffect  } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
-import { hp } from '../helpers/common';
+import { hp, normalizeToDDMMYYYY } from '../helpers/common';
 import { theme } from '../constants/theme'
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const CustomDatePicker = ({ placeholder = "Selecione uma data", onDateChange, style, value }) => {
     const [showPicker, setShowPicker] = useState(false);
     const [date, setDate] = useState(null);
-
+    const [stringDate, setStringDate] = useState(null);
     // Sincroniza o estado da data com o valor recebido como prop
     useEffect(() => {
         if (value) {
-            const [day, month, year] = value.split('/').map(Number);
-            const newData = new Date(year, month - 1, day);
+            const [day, month, year] = value.split('/').map(Number); // Corrigido para interpretar corretamente DD/MM/YYYY
+
+            const newData = new Date(year, month - 1, day); // Ajusta o mês (0-11)
+
+            setStringDate(value);
             setDate(newData);
         }
     }, [value]); // Atualiza apenas quando `value` mudar
@@ -20,15 +23,25 @@ const CustomDatePicker = ({ placeholder = "Selecione uma data", onDateChange, st
     const handleConfirm = (event, selectedDate) => {
         setShowPicker(Platform.OS === 'ios');
         if (selectedDate) {
-            setDate(selectedDate);
-            onDateChange(selectedDate);
+            // Garante que `selectedDate` é tratado como um objeto `Date`
+            const dateObj = new Date(selectedDate);
+            // Extrai os valores de dia, mês e ano
+            const day = String(dateObj.getDate()).padStart(2, '0'); // Obtém o dia
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Obtém o mês (0-11, por isso somamos 1)
+            const year = dateObj.getFullYear(); // Obtém o ano
+            // Formata no padrão DD/MM/YYYY
+            const dataFormat = `${day}/${month}/${year}`;
+            setStringDate(dataFormat);
+            // Atualiza o estado com a data
+            setDate(dateObj);
+            onDateChange(dataFormat);
         }
     };
 
     return (
         <View style={[styles.container, style]}>
             <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.dateInput}>
-                <Text style={styles.dateText} placeholderTextColor={theme.colors.textLight} >{date ? date.toLocaleDateString() : placeholder}</Text>
+                <Text style={styles.dateText} placeholderTextColor={theme.colors.textLight} >{date ? stringDate : placeholder}</Text>
             </TouchableOpacity>
             {showPicker && (
                 <View style={styles.modalContainer}  >

@@ -74,7 +74,7 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={{gap: 20}}>
                 <Text style={{fontSize: hp(1.8), color:theme.colors.dark}}>Configurações da conta</Text>
                 <View style={{gap: 20, paddingHorizontal: 15}}>
-                    <Pressable style={styles.accountAction} onPress={()=> router.push({pathname: 'signUp', params: {isUpdate: 'true'}})}>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push({pathname: 'signUp', params: {isUpdate: true}})}>
                         <Icon name="edit" color={"black"} />
                         <Text style={styles.actionText}>Editar perfil</Text>
                     </Pressable>

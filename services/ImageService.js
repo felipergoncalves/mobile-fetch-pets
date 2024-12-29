@@ -3,21 +3,6 @@ import * as FileSystem from 'expo-file-system'
 import { createSupabaseClient } from '../constants/supabaseInstance'
 import { supabaseUrl } from '../constants'
 
-export const getImageSrc = imagePath => {
-    if(imagePath){
-        return getSupabaseFileUrl(imagePath);
-    }else{
-        return require('../assets/images/defaultUser.png')
-    }
-}
-
-export const getSupabaseFileUrl = filePath => {
-    if(filePath){
-        return {uri: `${supabaseUrl}/storage/v1/object/public/uploads/${filePath}`}
-    }
-    return null;
-}
-
 // export const uploadFile = async (folderName, fileUri, isImage=true)=>{
 //     try{
 //         let fileName = getFilePath(folderName, isImage);
@@ -79,6 +64,22 @@ export const uploadImage = async (image, filePath, token) => {
     const publicUrl = publicUrlData.publicUrl
 
     return { success: true, data: publicUrl }
+}
+
+export const deleteImage = async (filePath, token) => {
+    const supabase = createSupabaseClient(token);
+
+    // Extract the file path from the public URL
+    const filePathParts = filePath.split('/');
+    const fileName = filePathParts.slice(-2).join('/');
+
+    const { error } = await supabase.storage.from('uploads').remove([fileName]);
+
+    if (error) {
+        return { success: false, msg: error.message };
+    }
+
+    return { success: true, msg: 'Imagem deletada com sucesso' };
 }
 
 export const getFilePath = (folderName, isImage)=>{

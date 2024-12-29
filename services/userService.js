@@ -1,5 +1,6 @@
 import createAxiosInstance from "../constants/axiosInstance";
-import { uploadImage } from "./ImageService";
+import { normalizeToDDMMYYYY } from "../helpers/common";
+import { deleteImage, uploadImage, verifyImage } from "./ImageService";
 
 export const getUserData = async (userId) => {
     const axios = await createAxiosInstance();
@@ -26,58 +27,69 @@ export const logout = async () => {
     });
 }
 
-export const updateUser = async (data)=>{
+export const updateUser = async (newUser, oldImagePath, image, token) =>{
     const axios = await createAxiosInstance();
+    let canUploadImage = false;
+
+    console.log('Verificando imagem...')
+    console.log(oldImagePath)
+
+    if (!oldImagePath) canUploadImage = true;
+    
+    // Deletar imagem antiga
+    if (oldImagePath && image) {
+        const reqDeleteImage = await deleteImage(oldImagePath, token);
+        
+        if (!reqDeleteImage.success) {
+            return {success: false, msg: reqDeleteImage.msg};
+        }
+
+        canUploadImage = true;
+    }
+    
+    // Enviar nova imagem
+    if (canUploadImage) {
+        const reqUploadImage = await uploadImage(image, 'profiles', token);
+
+        if (!reqUploadImage.success) {
+            return {success: false, msg: reqUploadImage.msg};
+        }
+    
+        newUser.image = reqUploadImage.data;
+    }
 
     const formData = new FormData();
-
-    formData.append('birthDate', data.birthDate.toISOString());
+    const bithDate = normalizeToDDMMYYYY(newUser.birthDate);
+    console.log(newUser.birthDate);
+    formData.append('birthDate', bithDate);
 
     // Adicionando outros campos
-    for (const key in data) {
-        if (data.hasOwnProperty(key) && key !== 'image' && key !== 'birthDate') {
-            formData.append(key, data[key]);
+    for (const key in newUser) {
+        if (newUser.hasOwnProperty(key) && key !== 'birthDate') {
+            formData.append(key, newUser[key]);
         }
     }
 
-    // Enviando requisição - Cadastro
-    const res =  await axios.put('/auth/update', formData, {
+    return await axios.put('/auth/update', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
-        },
-    });
-
-    if (res.data.error) {
-        return {success: false, msg: res.data.error.message};
-    }
-
-    // Envia a Imagem para o supabase
-    const {data:imageUpdated ,error} = await uploadImage(data.image, 'profiles', res.data.token);
-
-    if (error) {
-        return {success: false, msg: error.message};
-    }
-
-    console.log('Salvando no banco...')
-
-    // Salvar no banco a referencia da imagem
-
-    return await axios.post('/auth/save-image', {token: res.data.token, image: imageUpdated, uid: res.data.user.id})
+        }
+    })
     .then(({data}) => {
-        return { success: true };
+        return {success: true};
     })
     .catch((error) => {
         return {success: false, msg: error.message};
     });
 }
 
-export const signUp = async (data) => {
+export const signUp = async (data, image) => {
     const axios = await createAxiosInstance();
     console.log('[UserService] signUp');	
 
     const formData = new FormData();
 
-    formData.append('birthDate', data.birthDate.toISOString());
+    formData.append('birthDate', data.birthDate);
 
     // Adicionando outros campos
     for (const key in data) {
@@ -98,7 +110,7 @@ export const signUp = async (data) => {
     }
 
     // Envia a Imagem para o supabase
-    const {data:imageUpdated ,error} = await uploadImage(data.image, 'profiles', res.data.token);
+    const {data:imageUpdated ,error} = await uploadImage(image, 'profiles', res.data.token);
 
     if (error) {
         return {success: false, msg: error.message};

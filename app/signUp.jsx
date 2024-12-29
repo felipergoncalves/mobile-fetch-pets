@@ -1,10 +1,9 @@
-import React, { useRef, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TouchableOpacity, ScrollView, StyleSheet, Text, View, KeyboardAvoidingView, Platform, Alert, Image } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { theme } from '../constants/theme'
 import { useRouter } from 'expo-router'
-import { getAdressInformation, updateUser } from '../services/userService'
-import { signUp } from '../services/userService'
+import { signUp, getAdressInformation, updateUser } from '../services/userService'
 import ScreenWrapper from '../components/ScreenWrapper'
 import BackButton from '../components/BackButton'
 import Input from '../components/Input'
@@ -21,6 +20,7 @@ import { useLocalSearchParams } from 'expo-router';
 const signUpPage = () => {
     // Variables
     const router = useRouter();
+    const { user } = useAuth();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [newUser, setNewUser] = useState({
@@ -28,7 +28,7 @@ const signUpPage = () => {
         email: "",
         password: "",
         confirmPassword: "",
-        phone: "",
+        phoneNumber: "",
         birthDate: "",
         gender: "",
         address: "",
@@ -38,24 +38,50 @@ const signUpPage = () => {
         politycs: false,
         houseNumber: 0
     });
-    const { user } = useAuth();
-
     const { isUpdate } = useLocalSearchParams();
+    const [ image, setNewImage ] = useState(null);
+    const [ houseNumber, setHouseNumber ] = useState('');
+    
+    const isUpdateBoolean = isUpdate === 'true';
+
+    useEffect(() => {
+
+        if (isUpdateBoolean) {
+            setNewUser(user?.user);
+            setHouseNumber(user?.user.houseNumber);
+        }
+    }, [isUpdate]);
 
     // Functions
     const handleStep = (newStep) => {
-        if (isUpdate) {
-            setStep(newStep);
-            return;
-        }
+        if (isUpdateBoolean) {
+            if (step === 1) {
+                if(!newUser.password) {
+                    newUser.password = '';
+                    newUser.confirmPassword = '';
+                }
 
+                if (newUser.password) {
+                    if (newUser.password.length < 6) {
+                        Alert.alert("Cadastro", "A senha deve ter pelo menos 6 dígitos!");
+                        return;
+                    }
+
+                    if (newUser.password !== newUser.confirmPassword) {
+                        Alert.alert("Cadastro", "As senhas não coincidem!");
+                        return;
+                    }
+                }
+            }
+        return setStep(newStep);    
+        }
         if (step === 1) {
             if (newUser.name == '' || newUser.email == '' || newUser.password == '' || newUser.confirmPassword == '' || newUser.phone == '') {
                 Alert.alert("Cadastro!", "Por favor, preencha todos os campos!");
                 return;
             }
 
-            if (newUser.password.length < 6 && !isUpdate) {
+            if (newUser.password.length < 6 && !isUpdateBoolean) {
                 Alert.alert("Cadastro", "A senha deve ter pelo menos 6 dígitos!");
                 return;
             }
@@ -99,38 +125,31 @@ const signUpPage = () => {
             const filename = uri.substring(uri.lastIndexOf('/') + 1);
             const extend = filename.split('.')[1];
 
-            setNewUser({ ...newUser, image: { uri: uri, name: filename, type: `image/${extend}` } });
+            setNewImage({ uri: uri, name: filename, type: `image/${extend}` });
         }
     };
 
-    const getCep = async (zip) => {
-
-        if (zip.length < 8) {
-            return;
-        }
-        setLoading(true);
-        const res = await getAdressInformation(zip);
-
-        if (res.success) {
-            setNewUser({ ...newUser, stateAndCity: res.data.estado + "/" + res.data.localidade, address: res.data.logradouro, zip: zip });
-        }
-
-        setLoading(false);
-    }
-
     const onSubmit = async (option) => {
         setLoading(true);
+        let res = null;
 
-        // if (option === 'update') {
-        //     const res = await updateUser(user);
-        // }
+        if (option === 'update') {
+            const oldImagePath = user?.user.image;
 
-        if (option === 'signUp') {
-            const res = await signUp(newUser);
+            Object.keys(newUser).forEach(key => {
+                if (newUser[key]) {
+                    user.user[key] = newUser[key];
+                }
+            });
+
+            user.user.houseNumber = houseNumber;
+
+            res = await updateUser(user.user, oldImagePath, image, user.token);
         }
 
-        if (res) {
-            return;
+        if (option === 'signUp') {
+            newUser.houseNumber = houseNumber;
+            res = await signUp(newUser, image);
         }
 
         if (!res.success) {
@@ -152,7 +171,7 @@ const signUpPage = () => {
                 {/* Titulo - TOP */}
                 <View style={styles.titleContainer}>
                     <BackButton style={styles.buttonTitle} router={router} />
-                    <Text style={styles.title}>{isUpdate ? 'Editar Perfil' : 'Cadastro'}</Text>
+                    <Text style={styles.title}>{isUpdateBoolean ? 'Editar Perfil' : 'Cadastro'}</Text>
                 </View>
                 {/* Inputs e outros */}
                 {step === 1 && (
@@ -176,7 +195,7 @@ const signUpPage = () => {
                                         onChangeText={(text) => setNewUser({ ...newUser, name: text })}
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu Nome Completo"
-                                        value={isUpdate ? user.user.name : newUser.name}
+                                        value={newUser.name}
                                     />
                                     {/* Phone */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
@@ -184,8 +203,8 @@ const signUpPage = () => {
                                     </Text>
                                     <PhoneInput
                                         onCountryCodeChange={(value) => setNewUser({ ...newUser, phone: value })}
-                                        phoneValue={isUpdate ? user.user.phoneNumber : newUser.phone}
-                                        onPhoneChange={(value) => setNewUser({ ...newUser, phone: value })}
+                                        phoneValue={isUpdate ? user?.user.phoneNumber : newUser.phoneNumber}
+                                        onPhoneChange={(value) => setNewUser({ ...newUser, phoneNumber: value })}
                                         style={{ marginBottom: 10 }}
                                     />
                                     {/* Email */}
@@ -197,37 +216,31 @@ const signUpPage = () => {
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu E-mail"
                                         keyboardType="email-address"
-                                        value={isUpdate ? user.user.email : newUser.email}
+                                        value={newUser.email}
                                     />
                                     {/* Senha */}
-                                    { isUpdate ? null : (
-                                        <>
-                                            <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
-                                                Senha
-                                            </Text>
-                                            <Text style={styles.passwordCriteria}>
-                                                Senha deve ter pelo menos 6 dígitos
-                                            </Text>
-                                            <Input
-                                                secureTextEntry
-                                                onChangeText={(text) => setNewUser({ ...newUser, password: text })}
-                                                containerStyle={{ marginBottom: 10 }}
-                                                placeholder="Digite sua senha"
-                                                value={isUpdate ? '******' : newUser.password}
-                                            />
-                                            {/* Confirme a Senha */}
-                                            <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
-                                                Confirme a senha
-                                            </Text>
-                                            <Input
-                                                secureTextEntry
-                                                onChangeText={(text) => setNewUser({ ...newUser, confirmPassword: text })}
-                                                containerStyle={{ marginBottom: 10 }}
-                                                placeholder="Digite sua senha novamente"
-                                                value={isUpdate ? '******' : newUser.confirmPassword}
-                                            />
-                                        </>
-                                    )}
+                                    <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                        Senha
+                                    </Text>
+                                    <Text style={styles.passwordCriteria}>
+                                        Senha deve ter pelo menos 6 dígitos
+                                    </Text>
+                                    <Input
+                                        secureTextEntry
+                                        onChangeText={(text) => setNewUser({ ...newUser, password: text })}
+                                        containerStyle={{ marginBottom: 10 }}
+                                        placeholder="Digite sua senha"
+                                    />
+                                    {/* Confirme a Senha */}
+                                    <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                        Confirme a senha
+                                    </Text>
+                                    <Input
+                                        secureTextEntry
+                                        onChangeText={(text) => setNewUser({ ...newUser, confirmPassword: text })}
+                                        containerStyle={{ marginBottom: 10 }}
+                                        placeholder="Digite sua senha novamente"
+                                    />
                                 </View>
                                 <Button title={"Próximo Passo"} buttonStyle={styles.textButton} onPress={() => handleStep(2)} />
                             </ScrollView>
@@ -255,7 +268,7 @@ const signUpPage = () => {
                                         options={["Masculino", "Feminino", "Outro", "Prefiro não dizer"]}
                                         placeholder="Selecione uma opção"
                                         onSelect={(value) => setNewUser({ ...newUser, gender: value })}
-                                        value={isUpdate ? user.user.gender : newUser.gender}
+                                        value={isUpdate ? user?.user.gender : newUser.gender}
                                         style={{ marginBottom: 10 }}
                                     />
 
@@ -267,7 +280,7 @@ const signUpPage = () => {
                                         style={{ marginBottom: 10 }}
                                         placeholder='Selecione sua data de nascimento'
                                         onDateChange={(value) => setNewUser({ ...newUser, birthDate: value })}
-                                        value={isUpdate ? user.user.birthDate : newUser.birthDate}
+                                        value={newUser.birthDate}
                                     />
 
                                     {/* Estado / Cidade */}
@@ -275,8 +288,8 @@ const signUpPage = () => {
                                         Estado/Cidade
                                     </Text>
                                     <Input
-                                        OnChangeText={(text) => setNewUser({ ...newUser, stateAndCity: text })}
-                                        value={isUpdate ? user.user.stateAndCity : newUser.stateAndCity}
+                                        onChangeText={async (text) => setNewUser({ ...newUser, stateAndCity: text })}
+                                        value={newUser.stateAndCity}
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu Estado/Cidade"
                                     />
@@ -285,9 +298,9 @@ const signUpPage = () => {
                                         Endereço
                                     </Text>
                                     <Input
-                                        OnChangeText={(text) => setNewUser({ ...newUser, address: text })}
+                                        onChangeText={(text) => setNewUser({ ...newUser, address: text })}
                                         containerStyle={{ marginBottom: 10 }}
-                                        value={isUpdate ? user.user.address : newUser.address}
+                                        value={newUser.address}
                                         placeholder="Digite sua rua"
                                     />
                                     {/* CEP */}
@@ -295,22 +308,24 @@ const signUpPage = () => {
                                         CEP
                                     </Text>
                                     <Input
-                                        onChangeText={async (text) => { await getCep(text) }}
+                                        onChangeText={async (text) => setNewUser({ ...newUser, zip: text })}
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu CEP"
                                         keyboardType="number-pad"
-                                        value={isUpdate ? user.user.zip : newUser.zip}
+                                        value={newUser.zip}
                                     />
                                     {/* Numero */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
                                         Número
                                     </Text>
                                     <Input
-                                        OnChangeText={(text) => setNewUser({ ...newUser, address: text })}
+                                        onChangeText={(text) => {
+                                            setHouseNumber(text);
+                                        }}
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite número da sua casa ou apartamento"
                                         keyboardType="number-pad"
-                                        value={isUpdate ? user.user.houseNumber : newUser.houseNumber}
+                                        value={houseNumber}
                                     />
                                 </View>
                                 <Button title={"Próximo Passo"} buttonStyle={styles.textButton} onPress={() => handleStep(3)} />
@@ -324,7 +339,7 @@ const signUpPage = () => {
                             {/* Foto */}
 
                             <Text style={styles.subtitle}>
-                                {isUpdate ? 'Atualize sua foto de perfil!' : 'Ei, que tal colocar uma foto no seu perfil?(Opcional)'}
+                                {isUpdateBoolean ? 'Atualize sua foto de perfil!' : 'Ei, que tal colocar uma foto no seu perfil?(Opcional)'}
 
                             </Text>
 
@@ -334,7 +349,8 @@ const signUpPage = () => {
                                 }}>
                                     <Image
                                         style={styles.logoImage}
-                                        source={isUpdate ? { uri: user.user.image } : newUser.image ? { uri: newUser.image.uri } : require('../assets/images/UploadFoto.png')}
+                                        source={image?.uri ? { uri: image.uri } : require('../assets/images/UploadFoto.png')
+                                        }
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -343,15 +359,16 @@ const signUpPage = () => {
                                 Tamanho máximo de 5MB
                             </Text>
 
-                            {!isUpdate && (
+                            {!isUpdateBoolean && 
                                 <Checkbox
                                     label="Eu li e concordo com os Termos de Uso e a Política de Privacidade."
                                     checked={newUser.politycs}
                                     onChange={(value) => setNewUser({ ...newUser, politycs: value })}
                                 />
-                            )}
+                            }
+
                         </View>
-                        { isUpdate ? (
+                        { isUpdateBoolean ? (
                             <Button title={"Atualizar Perfil"} buttonStyle={styles.textButton} onPress={async () => await onSubmit('update')} />
                         )
                         :
@@ -364,12 +381,12 @@ const signUpPage = () => {
                     <>
                         <View style={styles.containerView}>
                             <Text style={styles.subtitle}>
-                                {isUpdate ? 'Atualização feita com sucesso!': 'Seu cadastro foi concluído com sucesso! Bem-vindo(a)!'}
+                                {isUpdateBoolean ? 'Atualização feita com sucesso!': 'Seu cadastro foi concluído com sucesso! Bem-vindo(a)!'}
                             </Text>
                             <Image style={styles.logoImage} resizeMode='contain' source={require('../assets/images/CadastroSuccess.png')} />
 
                         </View>
-                        {isUpdate ? (
+                        {isUpdateBoolean ? (
                             <Button title={"Voltar"} buttonStyle={styles.textButton} onPress={() => router.push('settings')} />
                         ) : (
                             <Button title={"Voltar ao Login"} buttonStyle={styles.textButton} onPress={() => router.push('login')} />
