@@ -5,20 +5,21 @@ import ThirdStep from './ThirdStep';
 import { createOrUpdatePost } from '../../services/postService';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NewPost = () => {
   const [step, setStep] = useState(1);
   const [, setFormData] = useState({});
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (data) => {
     try {
-      console.log("Final: ",data);
       setLoading(true);
-      const res = await createOrUpdatePost(data);
+      const res = await createOrUpdatePost(data, user.token, user.user.id);
       setLoading(false);
-
+      console.log(res);
       if (res.success) {
         //rota de sucesso - ajustar
         router.push("/petRegistrationSuccess");

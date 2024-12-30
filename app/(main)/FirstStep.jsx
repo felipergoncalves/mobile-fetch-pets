@@ -161,7 +161,7 @@ const FirstStep = ({ onNext }) => {
         {/* Linha 3 - Idade e Peso (KG) */}
         <View style={styles.row}>
           <View style={styles.inputContainer}>
-            <Text>Idade</Text>
+            <Text>Idade (Anos)</Text>
             <TextInput
               value={age}
               onChangeText={setAge}

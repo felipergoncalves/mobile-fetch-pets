@@ -1,56 +1,34 @@
-import { uploadImage } from "./ImageService";
+import createAxiosInstance from "../constants/axiosInstance";
+import { deleteImage, uploadImage, verifyImage } from "./ImageService";
 
-export const createOrUpdatePost = async (post)=>{
-    try{
-        //upload image
-        if(post.file && typeof post.file == 'object'){
-            let isImage = post?.file?.type == 'image';
-            let folderName = isImage? 'postImages' : 'postVideos'
-            let fileResult = await uploadImage(folderName, post?.file?.uri, isImage);
-            if(fileResult.success) post.file = fileResult.data;
-            else{
-                return fileResult;
-            }
-        }
-
-        const postData = {
-            pet_name: post.petName,
-            sex: post.sex,
-            species: post.species,
-            breed: post.breed,
-            age: post.age,
-            weight_kg: post.weight,
-            health_status: post.healthStatus,
-            behavior: post.behavior,
-            special_preferences: post.specialPreferences,
-            userId: post.userId, // ID do usuário que está cadastrando o post
-            file: post.file, // URL da imagem após upload
-            opt_in: post.isConfirmed
-        };
-        
-        // Adiciona o `id` ao `postData` somente se ele existir
-        if (post.id) {
-            postData.id = post.id;
-        }
-
-        const {data, error} = await supabase
-        .from('posts')
-        .upsert(postData)
-        .select()
-        .single();
-
-        console.log("Post Values:", post);
-
-        if(error){
-            console.log("createPost error: ", error);
-            return {success: false, msg: "Não foi possível criar seu post"}
-        }
-
-        return {success: true, data: data};
-    }catch(error){
-        console.log("createPost error: ", error);
-        return {success: false, msg: "Não foi possível criar seu post"}
+export const createOrUpdatePost = async (post, token, uid)=>{
+    const axios = await createAxiosInstance();
+    
+    const image = {
+        uri: post.file.uri,
+        type: post.file.mimeType,
+        name: post.file.fileName
     }
+    
+    // Realizando o Upload da Imagem no Supabase
+    const { data: urlData, error:uploadImageError } = await uploadImage(image, 'postImages', token);
+
+    if(uploadImageError){
+        return {success: false, msg: "Erro ao fazer upload da imagem"};
+    }
+    // Remover a proriadade file do objeto post
+    delete post.file;
+    // Adicionando a URL da imagem no objeto post e o id do usuário
+    post.image = urlData;
+    post.userId = uid;
+    // Enviando a req para o back-end
+    return await axios.post('/posts', post)
+    .then(({data}) => {
+        return {success: true};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    })
 }
 
 // export const fetchPosts = async (limit=10, userId, species=null)=>{
@@ -135,8 +113,7 @@ export const fetchPosts = async (limit = 10, species = null) => {
       console.log("fetchPosts error: ", error);
       return { success: false, msg: "Não foi possível buscar as publicações" };
     }
-  };
-  
+};  
 
 export const createPostLike = async (postLike)=>{
     try{

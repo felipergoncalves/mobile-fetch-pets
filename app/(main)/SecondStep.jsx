@@ -51,7 +51,7 @@ const SecondStep = ({ onNext, onPickImage }) => {
     setOptIn(prev => !prev);
   };
 
-    const onPick = async (isImage)=>{
+  const onPick = async (isImage)=>{
 
     let mediaConfig = {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -79,7 +79,7 @@ const SecondStep = ({ onNext, onPickImage }) => {
         if(typeof file == 'object') return true;
     
         return false;
-      }
+  }
 
   const getFileType = file =>{
     if(!file) return null;
@@ -101,7 +101,7 @@ const SecondStep = ({ onNext, onPickImage }) => {
         }
     
         return getSupabaseFileUrl(file)?.uri;
-      }
+  }
 
   //Verificando se o pet já existe, se existir é uma edição
   useEffect(()=>{

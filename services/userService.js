@@ -85,7 +85,6 @@ export const updateUser = async (newUser, oldImagePath, image, token) =>{
 
 export const signUp = async (data, image) => {
     const axios = await createAxiosInstance();
-    console.log('[UserService] signUp');	
 
     const formData = new FormData();
 
