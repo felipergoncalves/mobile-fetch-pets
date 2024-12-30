@@ -43,7 +43,7 @@ const ChatList = () => {
             onPress={() =>
                 router.push({
                     pathname: '/(main)/chatScreen',
-                    params: { userId: user.user.id, contactId: item.contactId, contactName: item.contactName },
+                    params: { userId: user.user.id, chatId: item.chat_id, contactId: item.contactId, contactName: item.contactName },
                 })
             }
             style={{ padding: 15, flexDirection: "row", gap: 10 }}
