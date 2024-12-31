@@ -189,7 +189,6 @@ const ChatScreen = () => {
                         renderItem={renderGroupedMessages}
                         onEndReached={handleLoadMore} // Chama ao atingir o topo
                         onEndReachedThreshold={0.1} // Quando 10% do topo for visível
-                        inverted // Inverte a lista para que as mensagens mais recentes fiquem no final
                         contentContainerStyle={{ paddingBottom: 20 }}
                     />
                 </View>
