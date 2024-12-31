@@ -1,6 +1,5 @@
 import createAxiosInstance from "../constants/axiosInstance";
 import { deleteImage, uploadImage, verifyImage } from "./ImageService";
-
 export const createOrUpdatePost = async (post, token, uid)=>{
     const axios = await createAxiosInstance();
     
@@ -12,7 +11,6 @@ export const createOrUpdatePost = async (post, token, uid)=>{
     
     // Realizando o Upload da Imagem no Supabase
     const { data: urlData, error:uploadImageError } = await uploadImage(image, 'postImages', token);
-
     if(uploadImageError){
         return {success: false, msg: "Erro ao fazer upload da imagem"};
     }
@@ -83,57 +81,76 @@ export const createOrUpdatePost = async (post, token, uid)=>{
 // }
 
 export const fetchPosts = async (limit = 10, species = null) => {
-    try {
-      // Inicia a query básica
-      let query = supabase
-        .from('posts')
-        .select(`
-          *,
-          user: users (id, name, image),
-          postLikes (*),
-          comments (count)
-        `)
-        .order('created_at', { ascending: false })
-        // .limit(limit);
+    const axios = await createAxiosInstance();
+    
+    return await axios.get('/posts/')
+    .then(({data}) => {
+        // console.log("POSTS CHEGARAM: ", data.data)
+        result = data.data;
+        return {success: true, result};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
+
+    // try {
+    //   // Inicia a query básica
+    //   let query = supabase
+    //     .from('posts')
+    //     .select(`
+    //       *,
+    //       user: users (id, name, image),
+    //       postLikes (*),
+    //       comments (count)
+    //     `)
+    //     .order('created_at', { ascending: false })
+    //     // .limit(limit);
   
-      // Adiciona o filtro de espécie, se necessário
-      if (species) {
-        query = query.eq('species', species);
-      }
+    //   // Adiciona o filtro de espécie, se necessário
+    //   if (species) {
+    //     query = query.eq('species', species);
+    //   }
   
-      const { data, error } = await query;
+    //   const { data, error } = await query;
   
-      if (error) {
-        console.log("fetchPosts error: ", error);
-        return { success: false, msg: "Não foi possível buscar as publicações" };
-      }
+    //   if (error) {
+    //     console.log("fetchPosts error: ", error);
+    //     return { success: false, msg: "Não foi possível buscar as publicações" };
+    //   }
   
-      return { success: true, data: data };
-    } catch (error) {
-      console.log("fetchPosts error: ", error);
-      return { success: false, msg: "Não foi possível buscar as publicações" };
-    }
-};  
+    //   return { success: true, data: data };
+    // } catch (error) {
+    //   console.log("fetchPosts error: ", error);
+    //   return { success: false, msg: "Não foi possível buscar as publicações" };
+    // }
+  };
+  
 
 export const createPostLike = async (postLike)=>{
-    try{
-        
-        const {data, error} = await supabase
-        .from('postLikes')
-        .insert(postLike)
-        .select()
-        .single();
+    const axios = await createAxiosInstance();
+    
+    return await axios.post('/favorites/')
+    .then(({data}) => {
+        result = data.data;
+        return {success: true, result};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
+}
 
-        if(error){
-            console.log("postLike error: ", error);
-            return {success: false, msg: "Não foi possível curtir a publicação"}
-        }
-
-        return {success: true, data: data};
-    }catch(error){
-        console.log("postLike error: ", error);
-        return {success: false, msg: "Não foi possível curtir a publicação"}
-    }
+export const getPostLikes = async (postId)=>{
+    const axios = await createAxiosInstance();
+    
+    return await axios.get(`/favorites/${postId}`)
+    .then(({data}) => {
+        console.log("RESULTADO DOS LIKES: ", data);
+        result = data.data;
+        return {success: true, result};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
 }
 
 export const removePostLike = async (postId, userId)=>{
@@ -158,70 +175,39 @@ export const removePostLike = async (postId, userId)=>{
 }
 
 export const fetchPostDetails = async (postId)=>{
-    try{
-        const {data, error} = await supabase
-        .from('posts')
-        .select(`
-            *,
-            user: users (id, name, image),
-            postLikes (*),
-            comments(*, user: users(id, name, image))
-        `)
-        .eq('id', postId)
-        .order("created_at", {ascending: false, foreignTable: 'comments'})
-        .single();
+    const axios = await createAxiosInstance();
+    
+    return await axios.get(`/posts/${postId}`)
+    .then(({data}) => {
+        result = data.data;
+        return {success: true, result};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
+    // try{
+    //     const {data, error} = await supabase
+    //     .from('posts')
+    //     .select(`
+    //         *,
+    //         user: users (id, name, image),
+    //         postLikes (*),
+    //         comments(*, user: users(id, name, image))
+    //     `)
+    //     .eq('id', postId)
+    //     .order("created_at", {ascending: false, foreignTable: 'comments'})
+    //     .single();
 
-        if(error){
-            console.log("fetchPostsDetails error: ", error);
-            return {success: false, msg: "Não foi possível buscar as publicações"}
-        }
+    //     if(error){
+    //         console.log("fetchPostsDetails error: ", error);
+    //         return {success: false, msg: "Não foi possível buscar as publicações"}
+    //     }
 
-        return {success: true, data: data};
-    }catch(error){
-        console.log("fetchPostsDetails error: ", error);
-        return {success: false, msg: "Não foi possível buscar as publicações"}
-    }
-}
-
-export const createComment = async (comment)=>{
-    try{
-        
-        const {data, error} = await supabase
-        .from('comments')
-        .insert(comment)
-        .select()
-        .single();
-
-        if(error){
-            console.log("comment error: ", error);
-            return {success: false, msg: "Não foi possível comentar na publicação"}
-        }
-
-        return {success: true, data: data};
-    }catch(error){
-        console.log("comment error: ", error);
-        return {success: false, msg: "Não foi possível comentar na publicação"}
-    }
-}
-
-export const removeComment = async (commentId)=>{
-    try{
-        
-        const {error} = await supabase
-        .from('comments')
-        .delete()
-        .eq('id', commentId)
-
-        if(error){
-            console.log("removeComment error: ", error);
-            return {success: false, msg: "Não foi possível remover o comentário"}
-        }
-
-        return {success: true, data: {commentId}};
-    }catch(error){
-        console.log("removeComment error: ", error);
-        return {success: false, msg: "Não foi possível remover o comentário"}
-    }
+    //     return {success: true, data: data};
+    // }catch(error){
+    //     console.log("fetchPostsDetails error: ", error);
+    //     return {success: false, msg: "Não foi possível buscar as publicações"}
+    // }
 }
 
 export const removePost = async (postId)=>{
@@ -242,4 +228,17 @@ export const removePost = async (postId)=>{
         console.log("removePost error: ", error);
         return {success: false, msg: "Não foi possível remover a publicação"}
     }
+}
+
+export const fetchMyPosts = async (userId) => {
+    const axios = await createAxiosInstance();
+    
+    return await axios.get(`/posts/user/${userId}`)
+    .then(({data}) => {
+        result = Array.isArray(data.data) ? data.data : [];
+        return {success: true, result};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
 }

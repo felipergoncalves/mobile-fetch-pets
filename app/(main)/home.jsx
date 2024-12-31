@@ -15,11 +15,10 @@ import { getUserData } from '../../services/userService'
 var limit = 10;
 const Home = () => {
 
-  const {user, setAuth} = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   const [posts, setPosts] = useState([]);
-  // const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
   const [filter, setFilter] = useState(null);
@@ -27,6 +26,7 @@ const Home = () => {
   useEffect(() => {
     // Carregar posts ao iniciar a página
     getPosts();
+    // console.log("Todos os posts: ", posts);
   }, []);
 
   const getPosts = async (species = null) => {
@@ -38,7 +38,9 @@ const Home = () => {
    try{
     const res = await fetchPosts(limit, species);
     if (res.success) {
-      setPosts(res.data);
+      // console.log("POSTS QUE CHEGARAM AQUI: ", res.data);
+      setPosts(res.result);
+      // console.log("Estado de posts após setPosts: ", posts);
       // setHasMore(res.data.length === limit);
       setFilter(species);
     }
@@ -49,25 +51,10 @@ const Home = () => {
    }
   };
 
-  // const handleFilterChange = (newFilter) => {
-  //   // setFilter(newFilter);
-  //   // setHasMore(true)
-  //   getPosts(newFilter); // Carrega posts com o novo filtro
-  // };
-
-  // const getPosts = async (species=null)=>{
-  //   //call the api here
-
-  //   if(!hasMore) return null;
-  //   limit = limit + 10;
-  //   let res = await fetchPosts(limit, species);
-  //   if(res.success){
-  //     if(posts.length==res.data.length) setHasMore(false);
-  //     setPosts(res.data);
-  //   }
-  // }
-
-  // console.log('user: ', user);
+  const mockPosts = [
+    { id: 1, pet_name: "Teste 1", body: "Corpo do teste 1" },
+    { id: 2, pet_name: "Teste 2", body: "Corpo do teste 2" },
+  ];
   
   return (
     <View style={{flex: 1}}>
@@ -76,23 +63,6 @@ const Home = () => {
           {/* posts */}
           <View style={styles.header}>
               <Image style={{ height: hp(8), width: "50%", alignSelf: "start", zIndex: 3}} resizeMode='contain' source={require('../../assets/images/logo.png')} />
-            {/* <View style={styles.headerActions}>
-              <View style={styles.headerActionsBackground}>
-                <Pressable onPress={() => {
-                  setNotificationCount(0);
-                  router.push('notifications');
-                }}>
-                  <Icon name="notification" strokeWidth={2} color={theme.colors.text}/>
-                  {
-                    notificationCount > 0 && (
-                      <View style={styles.pill}>
-                        <Text style={styles.pillText}>{notificationCount}</Text>
-                      </View>
-                    )
-                  }
-                </Pressable>
-              </View>
-            </View> */}
           </View>
           <View style={styles.homeBanner}>
             <Image style={{ height: hp(18), width: "100%", alignSelf: "center", zIndex: 3}} resizeMode='contain' source={require('../../assets/images/home-banner.png')} />
@@ -113,6 +83,7 @@ const Home = () => {
           </View>
           <FlatList
             data={posts}
+            style={{flex: 1}}
             scrollEnabled={false}
             refreshing={isLoading}
             showsVerticalScrollIndicator={false}
@@ -120,13 +91,10 @@ const Home = () => {
             keyExtractor={item=> item.id.toString()}
             renderItem={({item}) => <PostCard
                 item={item}
-                currentUser={user}
+                currentUser={user.user}
                 router={router}
               />
             }
-            // onEndReached={()=>{
-            //   getPosts();
-            // }} // TODO:fix this call while filter list is empty
             onEndReachedThreshold={0}
             ListFooterComponent={isLoading?(
               <View style={{marginVertical: posts.length==0? 200 : 30}}>

@@ -6,16 +6,16 @@ import Avatar from './Avatar'
 import moment from 'moment'
 import Icon from '../assets/icons'
 import { getSupabaseFileUrl } from '../services/ImageService'
-import { createPostLike, removePostLike } from '../services/postService'
+import { createPostLike, removePostLike, getPostLikes } from '../services/postService'
 import Header from './Header'
 import BackButton from './BackButton'
 import Button from './Button'
 import { color } from '@rneui/themed/dist/config'
+import { getUserData } from '../services/userService'
 
 const PostCardDetails = ({
     item,
     currentUser,
-    router,
     hasShadow = true,
     showMoreIcon = true,
     showDelete = false,
@@ -33,9 +33,36 @@ const PostCardDetails = ({
     }
 
     const [likes, setLikes] = useState([]);
+    const [user, setUser] = useState({});
+
+    const getUsers = async() => {
+            try{
+                const res = await getUserData(item?.userId);
+                if (res.success) {
+                    setUser(res.result);
+                }
+            }catch(err){
+                console.error(err);
+            }
+    }
+
+    const getPostLike = async (postId) => {
+       try{
+        const res = await getPostLikes(postId);
+        if (res.success) {
+
+            console.log("LIKES DO POST CHEGARAM: ", res.result);
+        }
+       }catch(err){
+        console.error(err);
+       }
+      };
 
     useEffect(() => {
+        console.log("O ITEM VEM ASSIM: ", item)
+        getPostLike(item?.id)
         setLikes(item?.postLikes);
+        getUsers(item?.userId);
     }, [])
 
     // const openPostDetails = ()=>{
@@ -43,46 +70,46 @@ const PostCardDetails = ({
     //     router.push({pathname: 'postDetails', params:{postId: item?.id}})
     // }
 
-    const confirmFavorite = () => {
-        Alert.alert(
-          liked ? "Remover dos Favoritos" : "Adicionar aos Favoritos",
-          liked
-            ? "Tem certeza que deseja remover este pet dos seus favoritos?"
-            : "Tem certeza que deseja adicionar este pet aos seus favoritos?",
-          [
-            {
-              text: "Cancelar",
-              style: "cancel",
-            },
-            {
-              text: "Sim",
-              onPress: onLike, // Chama a função onLike se o usuário confirmar
-            },
-          ]
-        );
-      };
+    // const confirmFavorite = () => {
+    //     Alert.alert(
+    //       liked ? "Remover dos Favoritos" : "Adicionar aos Favoritos",
+    //       liked
+    //         ? "Tem certeza que deseja remover este pet dos seus favoritos?"
+    //         : "Tem certeza que deseja adicionar este pet aos seus favoritos?",
+    //       [
+    //         {
+    //           text: "Cancelar",
+    //           style: "cancel",
+    //         },
+    //         {
+    //           text: "Sim",
+    //           onPress: onLike, // Chama a função onLike se o usuário confirmar
+    //         },
+    //       ]
+    //     );
+    //   };
 
-    const onLike = async ()=>{
-        if(liked){
-            //remove like
-            let updatedLikes = likes.filter(like=> like.userId!=currentUser?.id)
-            setLikes([...updatedLikes])
-            let res = await removePostLike(item?.id, currentUser?.id);
-            if(!res.success){
-                Alert.alert("Publicação", "Houve um problema!");
-            }
-        }else{
-            let data = {
-                userId: currentUser?.id,
-                postId: item?.id
-            }
-            setLikes([...likes, data])
-            let res = await createPostLike(data);
-            if(!res.success){
-                Alert.alert("Publicação", "Houve um problema!");
-            }
-        }
-    }
+    // const onLike = async ()=>{
+    //     if(liked){
+    //         //remove like
+    //         // let updatedLikes = likes.filter(like=> like.userId!=currentUser?.id)
+    //         setLikes([...updatedLikes])
+    //         let res = await removePostLike(item?.id, currentUser?.id);
+    //         if(!res.success){
+    //             Alert.alert("Publicação", "Houve um problema!");
+    //         }
+    //     }else{
+    //         let data = {
+    //             userId: currentUser?.id,
+    //             postId: item?.id
+    //         }
+    //         setLikes([...likes, data])
+    //         let res = await createPostLike(data);
+    //         if(!res.success){
+    //             Alert.alert("Publicação", "Houve um problema!");
+    //         }
+    //     }
+    // }
 
     const confirmDelete = () => {
         Alert.alert(
@@ -105,7 +132,7 @@ const PostCardDetails = ({
     }
 
     const createdAt = moment(item?.created_at).format('MMM D');
-    const liked = likes.filter(like=> like.userId == currentUser?.id)[0]? true: false;
+    // const liked = likes.filter(like=> like.userId == currentUser?.user.id)[0]? true: false;
   return (
     <View style={[styles.container, hasShadow && shadowStyles, {}]}>
       {/* post body and media */}
@@ -121,7 +148,7 @@ const PostCardDetails = ({
             } */}
 
             {
-                showDelete && currentUser.id == item?.userId && (
+                showDelete && currentUser.user.id == user?.id && (
                     <View style={styles.actions}>
                         <TouchableOpacity onPress={() => onEdit(item)}>
                             <Icon name="edit" size={hp(2.5)} color={theme.colors.text} />
@@ -134,14 +161,20 @@ const PostCardDetails = ({
             }
         </View>
         {
-            item?.file && item?.file?.includes('postImages') && (
-                <Image
-                    source={getSupabaseFileUrl(item?.file)}
-                    transition={100}
-                    style={styles.postMedia}
-                    contentFit='cover'
-                />
-            )
+            <Image
+            source={{uri: `${item?.image}`}}
+            transition={100}
+            style={styles.postMedia}
+            contentFit='cover'
+            />
+            // item?.file && item?.file?.includes('postImages') && (
+            //     <Image
+            //         source={getSupabaseFileUrl(item?.file)}
+            //         transition={100}
+            //         style={styles.postMedia}
+            //         contentFit='cover'
+            //     />
+            // )
         }
       </View>
 
@@ -152,9 +185,9 @@ const PostCardDetails = ({
                 <Text style={styles.petName}>{item.pet_name}</Text>
             </View>
             <View style={styles.footerButton}>
-                <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
+                {/* <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
                     <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 {/* <Text style={styles.count}>
                     {
                         likes?.length
@@ -216,7 +249,7 @@ const PostCardDetails = ({
                 {/* Imagem à esquerda */}
                 <Avatar
                 size={hp(4.5)}
-                uri={item?.user?.image}
+                uri={user.image}
                 rounded={theme.radius.md}
                 style={{ width: 50, height: 50, marginRight: 10 }}
                 />
