@@ -36,7 +36,7 @@ const ChatList = () => {
     useEffect(() => {
         const supabase = createSupabaseClient(user.token);
         fetchConversations();
-    }, [user.token]); // Dependência de `user.token`
+    }, [user.token]);
 
     const renderItem = ({ item }) => (
         <Pressable

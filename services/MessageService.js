@@ -2,13 +2,16 @@ import createAxiosInstance from "../constants/axiosInstance";
 
 export const MessageService = {
     /**
-     * Busca as mensagens de um chat específico.
+     * Busca as mensagens de um chat específico com paginação.
      * @param chat_id - O ID do chat.
+     * @param params - Parâmetros para paginação (limit e offset).
      */
-    async getMessages(chat_id) {
+    async getMessages(chat_id, params) {
         try {
             const axiosInstance = await createAxiosInstance();
-            const response = await axiosInstance.get(`/messages/${chat_id}`);
+            const response = await axiosInstance.get(`/messages/${chat_id}`, {
+                params, // Passa os parâmetros limit e offset
+            });
             return response.data;
         } catch (error) {
             console.error("Erro ao buscar mensagens:", error);
