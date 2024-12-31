@@ -21,7 +21,7 @@ const signUpPage = () => {
     // Variables
     const router = useRouter();
     const { user } = useAuth();
-    const [step, setStep] = useState(2);
+    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [newUser, setNewUser] = useState({
         name: "",

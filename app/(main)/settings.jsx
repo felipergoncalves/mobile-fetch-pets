@@ -1,5 +1,5 @@
 import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAuth, setUserData } from '../../contexts/AuthContext'
 import ScreenWrapper from '../../components/ScreenWrapper';
 import { useRouter } from 'expo-router';
@@ -25,6 +25,10 @@ const Settings = () => {
       await AsyncStorage.removeItem('@auth_token');
       router.replace('/welcome');
     }
+
+    useEffect(() => {
+        console.log("Usuário atual settings: ", user)
+      }, []);
 
     const handleLogout = async() => {
       //confirm modal
@@ -61,7 +65,7 @@ const UserHeader = ({user, router, handleLogout}) => {
               <View style={styles.settingsSection}>
                 <View style={styles.avatarContainer}>
                   <Avatar 
-                    uri={user.user.image}
+                    // uri={user.user.image}
                     size={hp(5)}
                     rounded={theme.radius.xxl*5}
                   />
@@ -78,11 +82,11 @@ const UserHeader = ({user, router, handleLogout}) => {
                         <Icon name="edit" color={"black"} />
                         <Text style={styles.actionText}>Editar perfil</Text>
                     </Pressable>
-                    <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push('petsForAdoption')}>
                     <Image style={{ height: hp(3), width: "7%", alignSelf: "center"}} resizeMode='contain' source={require('../../assets/images/paw.png')} />
                         <Text style={styles.actionText}>Pets para adoção</Text>
                     </Pressable>
-                    <Pressable style={styles.accountAction} onPress={()=> router.push('editProfile')}>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push('adoptedPets')}>
                     <Image style={{ height: hp(3), width: "7%", alignSelf: "center"}} resizeMode='contain' source={require('../../assets/images/paw.png')} />
                         <Text style={styles.actionText}>Pets adotados</Text>
                     </Pressable>

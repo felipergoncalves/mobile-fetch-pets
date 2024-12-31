@@ -5,10 +5,10 @@ import { deleteImage, uploadImage, verifyImage } from "./ImageService";
 export const getUserData = async (userId) => {
     const axios = await createAxiosInstance();
 
-    return await axios.get('/user/'+userId)
+    return await axios.get('/users/'+userId)
     .then(({data}) => {
-        console.log(data)
-        return {success: true, data};
+        result = data.user
+        return {success: true, result, data};
     })
     .catch((error) => {
         return {success: false, msg: error.message};

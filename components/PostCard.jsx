@@ -1,12 +1,12 @@
 import { StyleSheet, Text, TouchableOpacity, View, Image, Alert} from 'react-native'
 import React, { useEffect, useState} from 'react'
 import { theme } from '../constants/theme'
-import { hp, wp} from '../helpers/common'
+import { hp} from '../helpers/common'
 import Avatar from './Avatar'
 import moment from 'moment'
 import Icon from '../assets/icons'
-import { getSupabaseFileUrl } from '../services/ImageService'
 import { createPostLike, removePostLike } from '../services/postService'
+import { getUserData } from '../services/userService'
 
 const PostCard = ({
     item,
@@ -29,20 +29,34 @@ const PostCard = ({
     }
 
     const [likes, setLikes] = useState([]);
+    const [user, setUser] = useState({});
 
     useEffect(() => {
         setLikes(item?.postLikes);
+        getUsers();
     }, [])
+
+    const getUsers = async() => {
+        try{
+            const res = await getUserData(item?.userId);
+            if (res.success) {
+                setUser(res.result);
+            }
+        }catch(err){
+            console.error(err);
+        }
+    }
 
     const openPostDetails = ()=>{
         if(!showMoreIcon) return null;
-        router.push({pathname: 'postDetails', params:{postId: item?.id}})
+        console.log("Usuário atuall: ", currentUser);
+        router.push({pathname: 'postDetails', params:{postId: item?.id, currentUser: currentUser}})
     }
 
     const onLike = async ()=>{
         if(liked){
             //remove like
-            let updatedLikes = likes.filter(like=> like.userId!=currentUser?.id)
+            // let updatedLikes = likes.filter(like=> like.userId!=currentUser?.id)
             setLikes([...updatedLikes])
             let res = await removePostLike(item?.id, currentUser?.id);
             if(!res.success){
@@ -78,7 +92,7 @@ const PostCard = ({
     }
 
     const createdAt = moment(item?.created_at).format('MMM D');
-    const liked = likes.filter(like=> like.userId == currentUser?.id)[0]? true: false;
+    // const liked = likes.filter(like=> like.userId == currentUser?.id)[0]? true: false;
     const [showFullText, setShowFullText] = useState(false);
 
     const fullText = `${item?.pet_name} é ${item?.sex === 'Fêmea' ? 'uma' : 'um'} ${item?.species?.toLowerCase()} adorável, com ${item?.age} ${item?.age > 1 ? 'anos' : 'ano'} de vida. Com um peso de aproximadamente ${item?.weight_kg} kg, ${item?.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item?.age > 1 ? `${item?.sex === 'Fêmea' ? 'uma companheira' : 'um companheiro'}` : 'uma companhia'} cheio(a) de energia e carinho. Sempre pront${item?.sex === 'Fêmea' ? 'a' : 'o'} para novas aventuras, ${item?.pet_name} está à procura de um lar onde possa compartilhar momentos de alegria e amor.`;
@@ -90,11 +104,11 @@ const PostCard = ({
         <View style={styles.userInfo}>
             <Avatar
               size={hp(4.5)}
-              uri={item?.user?.image}
+              uri={user.image}
               rounded={theme.radius.md}
             />
             <View style={{gap: 2}}>
-                <Text style={styles.username}>{item?.user?.name}</Text>
+                <Text style={styles.username}>{user.name}</Text>
                 <Text style={styles.postTime}>{createdAt}</Text>
             </View>
         </View>
@@ -126,39 +140,25 @@ const PostCard = ({
         
         {/* post image */}
         {
-            item?.file && item?.file?.includes('postImages') && (
-                <Image
-                    source={getSupabaseFileUrl(item?.file)}
-                    transition={100}
-                    style={styles.postMedia}
-                    contentFit='cover'
-                />
-            )
+            <Image
+            source={{uri: `${item?.image}`}}
+            transition={100}
+            style={styles.postMedia}
+            contentFit='cover'
+            />
+            // item?.file && item?.file?.includes('postImages') && (
+            //     <Image
+            //         source={getSupabaseFileUrl(item?.image)}
+            //         transition={100}
+            //         style={styles.postMedia}
+            //         contentFit='cover'
+            //     />
+            // )
         }
       </View>
 
       {/* like, comment */}
       <View style={styles.footer}>
-        {/* <View style={styles.footerButton}>
-            <TouchableOpacity onPress={onLike}>
-                <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
-            </TouchableOpacity>
-            <Text style={styles.count}>
-                {
-                    likes?.length
-                }
-            </Text>
-        </View>
-        <View style={styles.footerButton}>
-            <TouchableOpacity onPress={openPostDetails}>
-                <Icon name="comment" size={24} color={theme.colors.textLight} />
-            </TouchableOpacity>
-            <Text style={styles.count}>
-                {
-                    item?.comments[0]?.count
-                }
-            </Text>
-        </View> */}
       </View>
       <TouchableOpacity onPress={openPostDetails}>
       <View style={{position: "relative"}}>

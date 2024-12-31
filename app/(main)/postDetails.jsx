@@ -23,69 +23,75 @@ const PostDetails = () => {
     const commentRef = useRef('');
     const [loading, setLoading] = useState(false);
 
-    const handleNewComment = async (payload) => {
-      console.log("Novo comentário", payload.new)
-      if(payload.new){
-        let newComment = {...payload.new};
-        let res = await getUserData(newComment.userId);
-        newComment.user = res.success? res.data: {};
-        setPost(prevPost=>{
-          return {
-            ...prevPost,
-            comments: [newComment, ...prevPost.comments]
-          }
-        })
-      }
-    }
+    // const handleNewComment = async (payload) => {
+    //   console.log("Novo comentário", payload.new)
+    //   if(payload.new){
+    //     let newComment = {...payload.new};
+    //     let res = await getUserData(newComment.userId);
+    //     newComment.user = res.success? res.data: {};
+    //     setPost(prevPost=>{
+    //       return {
+    //         ...prevPost,
+    //         comments: [newComment, ...prevPost.comments]
+    //       }
+    //     })
+    //   }
+    // }
+
+    useEffect(() => {
+        // Carregar posts ao iniciar a página
+        getPostDetails();
+        // console.log("Todos os posts: ", posts);
+      }, []);
 
     const getPostDetails = async ()=> {
         //fetch post details here
         let res = await fetchPostDetails(postId);
-        if(res.success) setPost(res.data);
+        if(res.success) setPost(res.result);
         setStartLoading(false);
     }
     
-    const onNewComment = async() => {
-      if(!commentRef.current) return null;
-      let data = {
-        userId: user?.id,
-        postId: post?.id,
-        text: commentRef.current
-      }
-      //create comment
-      setLoading(true);
-      let res = await createComment(data);
-      setLoading(false);
-      if(res.success){
-        if(user.id != post.userId){
-          //send notification
-          let notify = {
-            senderId: user.id,
-            receiverId: post.userId,
-            title: "comentou na sua publicação",
-            data: JSON.stringify({postId: post.id, commentId: res?.data?.id})
-          }
-          createNotification(notify);
-        }
-        inputRef?.current?.clear();
-        commentRef.current = "";
-      }else{
-        Alert.alert("Comentário", res.msg);
-      }
-    }
+    // const onNewComment = async() => {
+    //   if(!commentRef.current) return null;
+    //   let data = {
+    //     userId: user?.id,
+    //     postId: post?.id,
+    //     text: commentRef.current
+    //   }
+    //   //create comment
+    //   setLoading(true);
+    //   let res = await createComment(data);
+    //   setLoading(false);
+    //   if(res.success){
+    //     if(user.id != post.userId){
+    //       //send notification
+    //       let notify = {
+    //         senderId: user.id,
+    //         receiverId: post.userId,
+    //         title: "comentou na sua publicação",
+    //         data: JSON.stringify({postId: post.id, commentId: res?.data?.id})
+    //       }
+    //       createNotification(notify);
+    //     }
+    //     inputRef?.current?.clear();
+    //     commentRef.current = "";
+    //   }else{
+    //     Alert.alert("Comentário", res.msg);
+    //   }
+    // }
 
-    const onDeleteComment = async (comment)=>{
-      let res = await removeComment(comment?.id);
-      if(res.success){
-        setPost(prevPost => {
-          let updatedPost = {...prevPost};
-          updatedPost.comments = updatedPost.comments.filter(c=> c.id != comment.id);
-          return updatedPost;
-        })
-      }else{
-        Alert.alert('Comentário', res.msg)
-      }
-    }
+    // const onDeleteComment = async (comment)=>{
+    //   let res = await removeComment(comment?.id);
+    //   if(res.success){
+    //     setPost(prevPost => {
+    //       let updatedPost = {...prevPost};
+    //       updatedPost.comments = updatedPost.comments.filter(c=> c.id != comment.id);
+    //       return updatedPost;
+    //     })
+    //   }else{
+    //     Alert.alert('Comentário', res.msg)
+    //   }
+    // }
 
     const onDeletePost = async (item) => {
       //delete post here

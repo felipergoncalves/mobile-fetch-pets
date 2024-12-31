@@ -121,7 +121,7 @@ const ChatScreen = () => {
                 item.sender_id === userId ? styles.myMessage : styles.otherMessage
             }
         >
-            <Text style={styles.messageText}>{item.content}</Text>
+            <Text style={item.sender_id === userId ? styles.myMessageText : styles.otherMessageText}>{item.content}</Text>
             <Text
                 style={
                     item.sender_id === userId
@@ -138,10 +138,12 @@ const ChatScreen = () => {
     );
 
     const renderDateHeader = (date) => (
-        <View style={styles.dateHeader}>
-            <Text style={styles.dateHeaderText}>{date}</Text>
+      <View style={styles.dateHeader}>
+        <View style={{width: "30%", backgroundColor: "rgba(234,234,234,0.57)", borderRadius: theme.radius.sm}}>
+          <Text style={styles.dateHeaderText}>{date}</Text>
         </View>
-    );
+      </View>
+  );
 
 
     const renderGroupedMessages = ({ item }) => (
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     header: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
     myMessage: {
         alignSelf: "flex-end",
-        backgroundColor: "#DCF8C5",
+        backgroundColor: theme.colors.primary,
         padding: 10,
         borderRadius: 10,
         marginVertical: 5,
@@ -220,10 +222,11 @@ const styles = StyleSheet.create({
         marginVertical: 5,
         maxWidth: wp(85),
     },
-    messageText: { fontSize: 16 },
+    myMessageText: { fontSize: 16, color: "#FFF"},
+    otherMessageText: { fontSize: 16, color: "#000"},
     myTimestamp: {
         fontSize: 12,
-        color: "#888",
+        color: "#e2e2e2",
         marginTop: 5,
         textAlign: "right",
     },
@@ -241,6 +244,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#555",
         fontWeight: "bold",
+        textAlign: "center"
     },
 });
 
