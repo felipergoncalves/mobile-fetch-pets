@@ -2,22 +2,26 @@ import React, { useState } from 'react';
 import FirstStep from './FirstStep';
 import SecondStep from './SecondStep';
 import ThirdStep from './ThirdStep';
-import { createOrUpdatePost } from '../../services/postService';
-import { useRouter } from 'expo-router';
+import { createPost } from '../../services/postService';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 
 const NewPost = () => {
+  const router = useRouter();
+
   const [step, setStep] = useState(1);
   const [, setFormData] = useState({});
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+
+  const { post } = useLocalSearchParams();
+  const postToEdit = JSON.parse(post);
 
   const handleSubmit = async (data) => {
     try {
       setLoading(true);
-      const res = await createOrUpdatePost(data, user.token, user.user.id);
+      const res = await createPost(data,user.id);
       setLoading(false);
       console.log(res);
       if (res.success) {

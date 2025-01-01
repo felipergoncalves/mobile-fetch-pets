@@ -47,12 +47,11 @@ const login = () => {
             const token = userData.token;
             // Armazenar o token no AsyncStorage
             await AsyncStorage.setItem('@auth_token', token);
-            // console.log(userData);
-            setAuth(userData);
+            setAuth(userData.user);
 
             // Atualizar os dados do usuário
             let res = await getUserData(userData.user.id);
-            if(res.success) setUserData({...res.data, email});
+            if(res.success) setUserData({...res.result, email});
 
             router.replace('/home');
         })

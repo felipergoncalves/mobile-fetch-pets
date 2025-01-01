@@ -27,8 +27,7 @@ const MainLayout = () => {
 
     axios.get('/auth/check')
     .then(({data}) => {
-      // console.log('[CHECK AUTH] Data: ', data);
-      setAuth(data.user);
+      setAuth(data.user.user);
       updateUserData(data.user.user, data.user.user.email);
       router.replace('/home');
     })
@@ -41,7 +40,7 @@ const MainLayout = () => {
 
   const updateUserData = async (user, email) => {
     let res = await getUserData(user.id);
-    if(res.success) setUserData({...res.data, email});
+    if(res.success) setUserData({...res.result, email});
   }
 
   return (

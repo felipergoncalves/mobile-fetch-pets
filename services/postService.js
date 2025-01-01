@@ -1,8 +1,11 @@
 import createAxiosInstance from "../constants/axiosInstance";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { deleteImage, uploadImage, verifyImage } from "./ImageService";
-export const createOrUpdatePost = async (post, token, uid)=>{
+
+export const createPost = async (post, uid)=>{
     const axios = await createAxiosInstance();
-    
+    const token = await AsyncStorage.getItem('@auth_token');
+
     const image = {
         uri: post.file.uri,
         type: post.file.mimeType,
@@ -28,7 +31,36 @@ export const createOrUpdatePost = async (post, token, uid)=>{
         return {success: false, msg: error.message};
     })
 }
+export const updatepost = async (post, oldImagePath, image) => {
+    const axios = await createAxiosInstance();
+    const token = await AsyncStorage.getItem('@auth_token');
 
+    let canUploadImage = false;
+
+    if (!oldImagePath) canUploadImage = true;
+    
+    // Deletar imagem antiga
+    if (oldImagePath && image) {
+        const reqDeleteImage = await deleteImage(oldImagePath, token);
+        
+        if (!reqDeleteImage.success) {
+            return {success: false, msg: reqDeleteImage.msg};
+        }
+
+        canUploadImage = true;
+    }
+    
+    // Enviar nova imagem
+    if (canUploadImage) {
+        const reqUploadImage = await uploadImage(image, 'profiles', token);
+
+        if (!reqUploadImage.success) {
+            return {success: false, msg: reqUploadImage.msg};
+        }
+    
+        newUser.image = reqUploadImage.data;
+    }
+};
 // export const fetchPosts = async (limit=10, userId, species=null)=>{
 //     try{
 //         if(userId){
@@ -123,9 +155,8 @@ export const fetchPosts = async (limit = 10, species = null) => {
     //   console.log("fetchPosts error: ", error);
     //   return { success: false, msg: "Não foi possível buscar as publicações" };
     // }
-  };
-  
-
+};
+ 
 export const createPostLike = async (postLike)=>{
     const axios = await createAxiosInstance();
     
@@ -211,23 +242,15 @@ export const fetchPostDetails = async (postId)=>{
 }
 
 export const removePost = async (postId)=>{
-    try{
-        
-        const {error} = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId)
-
-        if(error){
-            console.log("removePost error: ", error);
-            return {success: false, msg: "Não foi possível remover a publicação"}
-        }
-
-        return {success: true, data: {postId}};
-    }catch(error){
-        console.log("removePost error: ", error);
-        return {success: false, msg: "Não foi possível remover a publicação"}
-    }
+    const axios = await createAxiosInstance();
+    
+    return await axios.delete(`/posts/${postId}`)
+    .then(({data}) => {
+        return {success: true};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
 }
 
 export const fetchMyPosts = async (userId) => {

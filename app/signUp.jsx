@@ -47,8 +47,8 @@ const signUpPage = () => {
     useEffect(() => {
 
         if (isUpdateBoolean) {
-            setNewUser(user?.user);
-            setHouseNumber(user?.user.houseNumber);
+            setNewUser(user);
+            setHouseNumber(user?.houseNumber);
         }
     }, [isUpdate]);
 
@@ -134,17 +134,17 @@ const signUpPage = () => {
         let res = null;
 
         if (option === 'update') {
-            const oldImagePath = user?.user.image;
+            const oldImagePath = user?.image;
 
             Object.keys(newUser).forEach(key => {
                 if (newUser[key]) {
-                    user.user[key] = newUser[key];
+                    user[key] = newUser[key];
                 }
             });
 
-            user.user.houseNumber = houseNumber;
+            user.houseNumber = houseNumber;
 
-            res = await updateUser(user.user, oldImagePath, image, user.token);
+            res = await updateUser(user, oldImagePath, image);
         }
 
         if (option === 'signUp') {
@@ -218,7 +218,7 @@ const signUpPage = () => {
                                     </Text>
                                     <PhoneInput
                                         onCountryCodeChange={(value) => setNewUser({ ...newUser, phone: value })}
-                                        phoneValue={isUpdate ? user?.user.phoneNumber : newUser.phoneNumber}
+                                        phoneValue={isUpdate ? user?.phoneNumber : newUser.phoneNumber}
                                         onPhoneChange={(value) => setNewUser({ ...newUser, phoneNumber: value })}
                                         style={{ marginBottom: 10 }}
                                     />
@@ -283,7 +283,7 @@ const signUpPage = () => {
                                         options={["Masculino", "Feminino", "Outro", "Prefiro não dizer"]}
                                         placeholder="Selecione uma opção"
                                         onSelect={(value) => setNewUser({ ...newUser, gender: value })}
-                                        value={isUpdate ? user?.user.gender : newUser.gender}
+                                        value={isUpdate ? user?.gender : newUser.gender}
                                         style={{ marginBottom: 10 }}
                                     />
 
@@ -327,6 +327,7 @@ const signUpPage = () => {
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu CEP"
                                         keyboardType="number-pad"
+                                        value={newUser.zip}
                                     />
                                     {/* Numero */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>

@@ -21,7 +21,9 @@ const FirstStep = ({ onNext }) => {
   const {user, setAuth} = useAuth();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const router = useRouter();
-  const post = useLocalSearchParams();
+
+  const { post } = useLocalSearchParams();
+  const postToEdit = JSON.parse(post);
 
   useEffect(() => {
     // Define as opções de raça conforme a espécie selecionada
@@ -69,15 +71,15 @@ const FirstStep = ({ onNext }) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
     });
-
-    if(post && post.id) {
-      setId(post.id);
-      setPetName(post.pet_name);
-      setSex(post.sex);
-      setSpecies(post.species);
-      setAge(post.age);
-      setWeight(post.weight_kg);
-      setHealthStatus(post.health_status);
+    console.log(postToEdit);
+    if(postToEdit && postToEdit.id) {
+      setId(postToEdit.id);
+      setPetName(postToEdit.pet_name);
+      setSex(postToEdit.sex);
+      setSpecies(postToEdit.species);
+      setAge(postToEdit.age.toString());
+      setWeight(postToEdit.weight_kg.toString());
+      setHealthStatus(postToEdit.health_status);
     }
 
     return () => {
@@ -85,19 +87,6 @@ const FirstStep = ({ onNext }) => {
       keyboardDidHideListener.remove();
     };
   }, []);
-
-  //Verificando se o pet já existe, se existir é uma edição
-  // useEffect(()=>{
-  //   if(post && post.id) {
-  //     setId(post.id);
-  //     setPetName(post.pet_name);
-  //     setSex(post.sex);
-  //     setSpecies(post.species);
-  //     setAge(post.age);
-  //     setWeight(post.weight_kg);
-  //     setHealthStatus(post.health_status);
-  //   }
-  // }, [])
 
   return (
     <View style={{flex: 1}}>

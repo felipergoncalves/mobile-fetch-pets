@@ -96,7 +96,7 @@ const PostCard = ({
     const [showFullText, setShowFullText] = useState(false);
 
     const fullText = `${item?.pet_name} é ${item?.sex === 'Fêmea' ? 'uma' : 'um'} ${item?.species?.toLowerCase()} adorável, com ${item?.age} ${item?.age > 1 ? 'anos' : 'ano'} de vida. Com um peso de aproximadamente ${item?.weight_kg} kg, ${item?.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item?.age > 1 ? `${item?.sex === 'Fêmea' ? 'uma companheira' : 'um companheiro'}` : 'uma companhia'} cheio(a) de energia e carinho. Sempre pront${item?.sex === 'Fêmea' ? 'a' : 'o'} para novas aventuras, ${item?.pet_name} está à procura de um lar onde possa compartilhar momentos de alegria e amor.`;
-
+    
   return (
     <View style={[styles.container, hasShadow && shadowStyles]}>
       <View style={styles.header}>
@@ -104,11 +104,11 @@ const PostCard = ({
         <View style={styles.userInfo}>
             <Avatar
               size={hp(4.5)}
-              uri={user.image}
+              uri={user?.image}
               rounded={theme.radius.md}
             />
             <View style={{gap: 2}}>
-                <Text style={styles.username}>{user.name}</Text>
+                <Text style={styles.username}>{user?.name}</Text>
                 <Text style={styles.postTime}>{createdAt}</Text>
             </View>
         </View>

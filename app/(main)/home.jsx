@@ -17,7 +17,6 @@ const Home = () => {
 
   const { user } = useAuth();
   const router = useRouter();
-
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);

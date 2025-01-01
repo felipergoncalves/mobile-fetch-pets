@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import createAxiosInstance from "../constants/axiosInstance";
 import { normalizeToDDMMYYYY } from "../helpers/common";
 import { deleteImage, uploadImage, verifyImage } from "./ImageService";
@@ -7,7 +8,7 @@ export const getUserData = async (userId) => {
 
     return await axios.get('/users/'+userId)
     .then(({data}) => {
-        result = data.user
+        result = data.data;
         return {success: true, result, data};
     })
     .catch((error) => {
@@ -27,12 +28,10 @@ export const logout = async () => {
     });
 }
 
-export const updateUser = async (newUser, oldImagePath, image, token) =>{
+export const updateUser = async (newUser, oldImagePath, image) =>{
     const axios = await createAxiosInstance();
+    const token = await AsyncStorage.getItem('@auth_token');
     let canUploadImage = false;
-
-    console.log('Verificando imagem...')
-    console.log(oldImagePath)
 
     if (!oldImagePath) canUploadImage = true;
     
@@ -60,7 +59,7 @@ export const updateUser = async (newUser, oldImagePath, image, token) =>{
 
     const formData = new FormData();
     const bithDate = normalizeToDDMMYYYY(newUser.birthDate);
-    console.log(newUser.birthDate);
+
     formData.append('birthDate', bithDate);
 
     // Adicionando outros campos

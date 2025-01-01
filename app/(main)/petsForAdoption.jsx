@@ -17,7 +17,7 @@ import { theme } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import Navigator from '../../components/Navigator';
-import { fetchMyPosts } from '../../services/postService';
+import { fetchMyPosts, removePost } from '../../services/postService';
 import Icon from '../../assets/icons';
 
 const PetsForAdoption = () => {
@@ -31,7 +31,7 @@ const PetsForAdoption = () => {
     useEffect(() => {
         const loadPosts = async () => {
             setLoading(true);
-            const result = await fetchMyPosts(user.user.id);
+            const result = await fetchMyPosts(user.id);
             if (result.success) {
                 setPosts(result.result);
             } else {
@@ -40,7 +40,7 @@ const PetsForAdoption = () => {
             setLoading(false);
         };
         loadPosts();
-        console.log("PUBLICAÇÕES ESTÃO ASSIM: ", posts);
+        // console.log("PUBLICAÇÕES ESTÃO ASSIM: ", posts);
     }, []);
 
     const openOptions = (post) => {
@@ -51,6 +51,20 @@ const PetsForAdoption = () => {
     const closeOptions = () => {
         setIsModalVisible(false);
         setSelectedPost(null);
+    };
+
+    const handleDelete = async (postId) => {
+        const result = await removePost(postId);
+
+        setLoading(true);
+
+        if (!result.success) {
+            Alert.alert('Erro', 'Não foi possível excluir o post.');
+            setLoading(false);
+            return
+        }
+        Alert.alert('Sucesso', 'Post excluído com sucesso.');
+        setLoading(false);
     };
 
     return (
@@ -109,6 +123,7 @@ const PetsForAdoption = () => {
                             style={styles.modalOption}
                             onPress={() => {
                                 console.log("Editar post:", selectedPost);
+                                router.push({ pathname: 'newPost', params: { post: JSON.stringify(selectedPost) } });
                                 closeOptions();
                             }}
                         >
@@ -117,8 +132,8 @@ const PetsForAdoption = () => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.modalOption}
-                            onPress={() => {
-                                console.log("Excluir post:", selectedPost);
+                            onPress={async () => {
+                                await handleDelete(selectedPost.id);
                                 closeOptions();
                             }}
                         >
