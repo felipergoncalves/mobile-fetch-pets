@@ -9,11 +9,11 @@ import Icon from "../../assets/icons";
 import { useRoute } from "@react-navigation/native";
 import { MessageService } from "../../services/MessageService";
 import { createSupabaseClient } from "../../constants/supabaseInstance";
-import {useAuth} from "../../contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ChatScreen = () => {
     const route = useRoute();
-    const { user } = useAuth();
+    const token = AsyncStorage.getItem('@auth_token');
     const { userId, chatId, contactId, contactName } = route.params || {};
     const [messages, setMessages] = useState([]);
     const [groupedMessages, setGroupedMessages] = useState([]);
@@ -22,17 +22,20 @@ const ChatScreen = () => {
     const [hasMore, setHasMore] = useState(true); // Indica se há mais mensagens para carregar
     const [page, setPage] = useState(1); // Página atual
     const pageSize = 50; // Quantidade de mensagens por página
-    const supabase = createSupabaseClient(user.token);
+    const supabase = createSupabaseClient(token);
+    const users_ids = [userId, contactId];
 
     const fetchMessages = async (isInitialLoad = false) => {
         // if (loading || !hasMore) return;
 
         try {
+            setMessages([]);
             setLoading(true);
 
             const offset = (page - 1) * pageSize; // Calcula o offset baseado na página atual
             const response = await MessageService.getMessages(chatId, { limit: pageSize, offset });
 
+            console.log("Messages:", response.data);
             const messages = response.data || [];
             if (messages.length < pageSize) setHasMore(false);
 
@@ -47,14 +50,15 @@ const ChatScreen = () => {
             Alert.alert("Erro", "Erro ao carregar mensagens.");
         } finally {
             setLoading(false);
+            setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+            }, 100);
         }
     };
 
-
-
-    const handleLoadMore = () => {
+    const handleLoadMore = async () => {
         if (!loading && hasMore) {
-            fetchMessages();
+            await  fetchMessages();
         }
     };
 
@@ -64,29 +68,31 @@ const ChatScreen = () => {
         }
     }, [chatId]);
 
-
-    const subscribeToMessages = () => {
-        console.log("Subscribing to messages");
+    // Realtime para múltiplos chats do usuário
+    useEffect(() => {
+        console.log("useEffect: chatId", chatId);
         const channel = supabase
-            .channel(`messages`)
+            .channel(chatId)
             .on(
-                "postgres_changes",
+                'postgres_changes',
                 {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "messages",
-                    filter: `chat_id=eq.${chatId}`,
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `chat_id=eq.${chatId}`
                 },
                 (payload) => {
-                    console.log(payload);
+                    console.log("Channel: payload", payload);
+                    fetchMessages();
                 }
             )
             .subscribe();
 
         return () => {
-            channel.unsubscribe();
+            supabase.removeChannel(channel);
         };
-    };
+    }, [messages, setMessages, chatId]);
+
 
     const groupMessagesByDate = (messages) => {
         const grouped = {};
@@ -105,7 +111,7 @@ const ChatScreen = () => {
         try {
             if (!content) return;
             await MessageService.sendMessage(userId, contactId, content); // Envia a mensagem
-            fetchMessages(); // Atualiza as mensagens
+            await fetchMessages(true ); // Atualiza as mensagens
         } catch (error) {
             Alert.alert("Erro", "Erro ao enviar mensagem.");
         } finally {
@@ -116,18 +122,15 @@ const ChatScreen = () => {
     };
 
     const renderMessage = ({ item }) => (
-        <View key={`${item.date}-${item.id}`}
-            style={
-                item.sender_id === userId ? styles.myMessage : styles.otherMessage
-            }
+        <View
+            key={item.id}
+            style={item.sender_id === userId ? styles.myMessage : styles.otherMessage}
         >
-            <Text style={item.sender_id === userId ? styles.myMessageText : styles.otherMessageText}>{item.content}</Text>
+            <Text style={item.sender_id === userId ? styles.myMessageText : styles.otherMessageText}>
+                {item.content}
+            </Text>
             <Text
-                style={
-                    item.sender_id === userId
-                        ? styles.myTimestamp
-                        : styles.otherTimestamp
-                }
+                style={item.sender_id === userId ? styles.myTimestamp : styles.otherTimestamp}
             >
                 {new Date(item.created_at).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -136,6 +139,7 @@ const ChatScreen = () => {
             </Text>
         </View>
     );
+
 
     const renderDateHeader = (date) => (
       <View style={styles.dateHeader}>
@@ -147,11 +151,14 @@ const ChatScreen = () => {
 
 
     const renderGroupedMessages = ({ item }) => (
-        <View key={item.date}>
+        <View key={`group-${item.date}`}>
             {renderDateHeader(item.date)}
-            {item.messages.map((msg) => renderMessage({ item: msg }))}
+            {item.messages.map((msg) => (
+                <View key={msg.id}>{renderMessage({ item: msg })}</View>
+            ))}
         </View>
     );
+
 
     return (
         <View style={{ flex: 1, backgroundColor: "white" }}>
@@ -187,7 +194,7 @@ const ChatScreen = () => {
                     <FlatList
                         ref={flatListRef}
                         data={groupedMessages}
-                        keyExtractor={(item, index) => `${item.date}-${index}`}
+                        keyExtractor={(item) => `group-${item.date}`}
                         renderItem={renderGroupedMessages}
                         onEndReached={handleLoadMore} // Chama ao atingir o topo
                         onEndReachedThreshold={0.1} // Quando 10% do topo for visível

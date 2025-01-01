@@ -16,14 +16,12 @@ const ChatList = () => {
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const supabase = createSupabaseClient(user.token);
 
     // Função para buscar as conversas iniciais
     const fetchConversations = async () => {
         try {
             setLoading(true);
-            console.log("user.id: ", user.user.id);
-            const response = await MessageService.getConversations(user.user.id);
+            const response = await MessageService.getConversations(user.id);
             console.log("Conversations:", response.data);
             setConversations(response.data);
         } catch (error) {
@@ -36,14 +34,14 @@ const ChatList = () => {
     useEffect(() => {
         const supabase = createSupabaseClient(user.token);
         fetchConversations();
-    }, [user.token]);
+    }, [user.id]);
 
     const renderItem = ({ item }) => (
         <Pressable
             onPress={() =>
                 router.push({
                     pathname: '/(main)/chatScreen',
-                    params: { userId: user.user.id, chatId: item.chat_id, contactId: item.contactId, contactName: item.contactName },
+                    params: { userId: user.id, chatId: item.chat_id, contactId: item.contactId, contactName: item.contactName },
                 })
             }
             style={{ padding: 15, flexDirection: "row", gap: 10 }}
