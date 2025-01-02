@@ -282,14 +282,24 @@ const PostCardDetails = ({
                 </View>
 
                 {/* Ícone de chat à direita */}
-                <TouchableOpacity onPress={async () => {
-                    router.push({
-                        pathname: '/(main)/chatScreen',
-                        params: { userId: currentUser.id, chatId: generateChatUUID(currentUser.id, item.userId), contactId: item.userId,  preMessage: preMessage, contactName: await getNameAdopter() },
-                    })
-                }}>
-                    <Icon name="chat" size={24} color={theme.colors.primary} />
-                </TouchableOpacity>
+                {item.adopter === null && (
+                    <TouchableOpacity
+                        onPress={async () => {
+                            router.push({
+                                pathname: '/(main)/chatScreen',
+                                params: {
+                                    userId: currentUser.id,
+                                    chatId: generateChatUUID(currentUser.id, item.userId),
+                                    contactId: item.userId,
+                                    preMessage: preMessage,
+                                    contactName: await getNameAdopter(),
+                                },
+                            });
+                        }}
+                    >
+                        <Icon name="chat" size={24} color={theme.colors.primary} />
+                    </TouchableOpacity>
+                )}
 
                 {/* Descrição do pet */}
             </View>
