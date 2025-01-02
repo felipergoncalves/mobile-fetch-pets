@@ -5,13 +5,12 @@ import { hp, wp} from '../helpers/common'
 import Avatar from './Avatar'
 import moment from 'moment'
 import Icon from '../assets/icons'
-import { getSupabaseFileUrl } from '../services/ImageService'
 import { createPostLike, removePostLike, getPostLikes } from '../services/postService'
 import Header from './Header'
-import BackButton from './BackButton'
 import Button from './Button'
-import { color } from '@rneui/themed/dist/config'
 import { getUserData } from '../services/userService'
+import {generateChatUUID} from "../helpers/generateChatId";
+import {useRouter} from "expo-router";
 
 const PostCardDetails = ({
     item,
@@ -34,16 +33,29 @@ const PostCardDetails = ({
 
     const [likes, setLikes] = useState([]);
     const [user, setUser] = useState({});
+    const router = useRouter();
 
-    const getUsers = async() => {
+    const getNameAdopter = async() => {
             try{
-                const res = await getUserData(item?.userId);
+                const res = await getUserData(item?.adopter);
                 if (res.success) {
-                    setUser(res.result);
+                    console.log("USER DO PET CHEGARAM: ", res.data);
+                    return res.data.data.name;
                 }
             }catch(err){
                 console.error(err);
             }
+    }
+
+    const getUsers = async() => {
+        try{
+            const res = await getUserData(item?.userId);
+            if (res.success) {
+                setUser(res.result);
+            }
+        }catch(err){
+            console.error(err);
+        }
     }
 
     const getPostLike = async (postId) => {
@@ -51,7 +63,7 @@ const PostCardDetails = ({
         const res = await getPostLikes(postId);
         if (res.success) {
 
-            console.log("LIKES DO POST CHEGARAM: ", res.result);
+            console.log("LIKES DO POST CHEGARAM: ", res.data);
         }
        }catch(err){
         console.error(err);
@@ -59,7 +71,6 @@ const PostCardDetails = ({
       };
 
     useEffect(() => {
-        console.log("O ITEM VEM ASSIM: ", item)
         getPostLike(item?.id)
         setLikes(item?.postLikes);
         getUsers(item?.userId);
@@ -148,7 +159,7 @@ const PostCardDetails = ({
             } */}
 
             {
-                showDelete && currentUser.user.id == user?.id && (
+                showDelete && currentUser.id == user?.id && (
                     <View style={styles.actions}>
                         <TouchableOpacity onPress={() => onEdit(item)}>
                             <Icon name="edit" size={hp(2.5)} color={theme.colors.text} />
@@ -270,7 +281,12 @@ const PostCardDetails = ({
                 </View>
 
                 {/* Ícone de chat à direita */}
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity onPress={async () => {
+                    router.push({
+                        pathname: '/(main)/chatScreen',
+                        params: { userId: currentUser.id, chatId: generateChatUUID(currentUser.id, item.adopter), contactId: item.adopter, contactName: await getNameAdopter() },
+                    })
+                }}>
                     <Icon name="chat" size={24} color={theme.colors.primary} />
                 </TouchableOpacity>
 
