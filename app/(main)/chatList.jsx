@@ -10,12 +10,15 @@ import Avatar from '../../components/Avatar';
 import { theme } from '../../constants/theme';
 import { MessageService } from '../../services/MessageService';
 import { createSupabaseClient } from '../../constants/supabaseInstance';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ChatList = () => {
     const { user } = useAuth();
+    const token = AsyncStorage.getItem('@auth_token');
     const [conversations, setConversations] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const supabase = createSupabaseClient(token);
 
     // Função para buscar as conversas iniciais
     const fetchConversations = async () => {
@@ -33,6 +36,59 @@ const ChatList = () => {
 
     useEffect(() => {
         fetchConversations();
+    }, [user.id]);
+
+    // Adicionando Realtime para atualizar a lista de conversas
+    useEffect(() => {
+        console.log("Subscribing to Realtime for conversations");
+        const channel = supabase
+            .channel('messages')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'messages',
+                },
+                (payload) => {
+                    console.log("Nova mensagem recebida via Realtime:", payload);
+
+                    if (payload.new) {
+                        const newMessage = payload.new;
+
+                        // Atualize a lista de conversas
+                        setConversations((prevConversations) => {
+                            const updatedConversations = [...prevConversations];
+                            const existingConversationIndex = updatedConversations.findIndex(
+                                (conv) => conv.chat_id === newMessage.chat_id
+                            );
+
+                            if (existingConversationIndex !== -1) {
+                                // Atualize a conversa existente
+                                updatedConversations[existingConversationIndex] = {
+                                    ...updatedConversations[existingConversationIndex],
+                                    content: newMessage.content, // Atualize a última mensagem
+                                };
+                            } else {
+                                // Adicione uma nova conversa
+                                updatedConversations.push({
+                                    chat_id: newMessage.chat_id,
+                                    contactId: newMessage.sender_id === user.id ? newMessage.receiver_id : newMessage.sender_id,
+                                    contactName: 'Novo Contato', // Você pode ajustar para buscar o nome do contato se necessário
+                                    content: newMessage.content,
+                                });
+                            }
+
+                            return updatedConversations;
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [user.id]);
 
     const renderItem = ({ item }) => (
