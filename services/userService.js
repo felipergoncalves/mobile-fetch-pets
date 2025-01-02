@@ -8,8 +8,8 @@ export const getUserData = async (userId) => {
 
     return await axios.get('/users/'+userId)
     .then(({data}) => {
-        // console.log("USUÁRIO BUSCADO: ", data.user);
-        result = data.user;
+        // console.log("USUÁRIO BUSCADO: ", data.data);
+        result = data.data;
         return {success: true, result, data};
     })
     .catch((error) => {

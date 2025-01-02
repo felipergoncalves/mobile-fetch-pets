@@ -12,7 +12,8 @@ const ThirdStep = ({ onNext, isLoading = false }) => {
   const [specialPreferences, setspecialPreferences] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const {user} = useAuth();
-  const post = useLocalSearchParams();
+  const { post } = useLocalSearchParams();
+  const postToEdit = post ? JSON.parse(post) : {};
 
   const handleNext = () => {
     if (!behavior && !specialPreferences) {
@@ -27,9 +28,9 @@ const ThirdStep = ({ onNext, isLoading = false }) => {
 
   //Verificando se o pet já existe, se existir é uma edição
   useEffect(()=>{
-    if(post && post.id) {
-      setBehavior(post.behavior);
-      setspecialPreferences(post.special_preferences);
+    if(postToEdit && postToEdit.id) {
+      setBehavior(postToEdit.behavior);
+      setspecialPreferences(postToEdit.special_preferences);
     }
   }, [])
 

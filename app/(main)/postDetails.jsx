@@ -105,7 +105,7 @@ const PostDetails = () => {
 
     const onEditPost = async (item) => {
       router.back();
-      router.push({pathname: 'newPost', params: {...item}});
+      router.push({pathname: 'newPost', params: {post: JSON.stringify(item)}});
     }
 
     if(startLoading){

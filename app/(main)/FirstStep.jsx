@@ -23,7 +23,7 @@ const FirstStep = ({ onNext }) => {
   const router = useRouter();
 
   const { post } = useLocalSearchParams();
-  const postToEdit = JSON.parse(post);
+  const postToEdit = post ? JSON.parse(post) : {};
 
   useEffect(() => {
     // Define as opções de raça conforme a espécie selecionada
@@ -57,6 +57,7 @@ const FirstStep = ({ onNext }) => {
   }, [species]);
 
   const handleNext = () => {
+    console.log("ALL: ", !petName, !sex, !species, !breed, !age, !weight, !healthStatus)
     if (!petName || !sex || !species || !breed || !age || !weight || !healthStatus) {
       Alert.alert("Novo Pet", "Por favor, preencha todos os campos");
       return;
@@ -71,12 +72,14 @@ const FirstStep = ({ onNext }) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
     });
+
     console.log(postToEdit);
     if(postToEdit && postToEdit.id) {
       setId(postToEdit.id);
       setPetName(postToEdit.pet_name);
       setSex(postToEdit.sex);
       setSpecies(postToEdit.species);
+      setBreed(postToEdit.breed);
       setAge(postToEdit.age.toString());
       setWeight(postToEdit.weight_kg.toString());
       setHealthStatus(postToEdit.health_status);
@@ -137,7 +140,7 @@ const FirstStep = ({ onNext }) => {
           <View style={styles.inputContainer}>
             <Text>Raça</Text>
             <View style={styles.pickerContainer}>
-              <Picker selectedValue={post.id ? post.breed : breed} value={breed} onValueChange={setBreed} style={styles.picker} enabled={species !== ''}>
+              <Picker selectedValue={postToEdit.id ? postToEdit.breed : breed} value={breed} onValueChange={setBreed} style={styles.picker} enabled={species !== ''}>
                 <Picker.Item label="Selecione" value="" />
                 {breedOptions.map((breedOption, index) => (
                   <Picker.Item key={index} label={breedOption} value={breedOption} />

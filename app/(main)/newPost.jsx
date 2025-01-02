@@ -16,7 +16,9 @@ const NewPost = () => {
   const { user } = useAuth();
 
   const { post } = useLocalSearchParams();
-  const postToEdit = JSON.parse(post);
+  const postToEdit = post ? JSON.parse(post) : null;
+  console.log("POST TO EDIT: ", postToEdit);
+
 
   const handleSubmit = async (data) => {
     try {

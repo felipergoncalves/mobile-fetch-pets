@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { hp, wp } from '../../helpers/common';
 import { TouchableOpacity } from 'react-native';
 import { theme } from '../../constants/theme';
-import { fetchPosts } from '../../services/postService';
+import {fetchMyPosts, fetchPosts} from '../../services/postService';
 import { logout } from '../../services/userService';
 import { useAuth } from '../../contexts/AuthContext'
 import ScreenWrapper from '../../components/ScreenWrapper';
@@ -39,7 +39,7 @@ const Profile = () => {
   
       if(!hasMore) return null;
       limit = limit + 10;
-      let res = await fetchPosts(limit, user.id);
+      let res = await fetchMyPosts(user.id);
       if(res.success){
         if(posts.length==res.data.length) setHasMore(false);
         setPosts(res.data);

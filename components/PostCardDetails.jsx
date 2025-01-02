@@ -62,7 +62,7 @@ const PostCardDetails = ({
             try{
                 const res = await getUserData(item?.userId);
                 if (res.success) {
-                    return res.data.user.name;
+                    return res.result.name;
                 }
             }catch(err){
                 console.error(err);
@@ -98,6 +98,9 @@ const PostCardDetails = ({
         getUsers(item?.userId);
 
         currentUser.id == user?.id ? setIsDisabled(true) : setIsDisabled(false);
+
+        console.log("POST CARD DETAILS: ", item);
+        console.log("USER: ", user);
 
     }, [])
 
@@ -345,7 +348,18 @@ const PostCardDetails = ({
                     styles.button,
                     isDisabled && styles.buttonDisabled
                     ]}
-                    onPress={() => {}}
+                    onPress={async () => {
+                        router.push({
+                            pathname: '/(main)/chatScreen',
+                            params: {
+                                userId: currentUser.id,
+                                chatId: generateChatUUID(currentUser.id, item.userId),
+                                contactId: item.userId,
+                                preMessage: preMessage,
+                                contactName: await getNameAdopter(),
+                            },
+                        });
+                    }}
                     disabled={isDisabled}
                 >
                     <Text
