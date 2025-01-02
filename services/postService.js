@@ -11,7 +11,7 @@ export const createPost = async (post, uid)=>{
         type: post.file.mimeType,
         name: post.file.fileName
     }
-    
+
     // Realizando o Upload da Imagem no Supabase
     const { data: urlData, error:uploadImageError } = await uploadImage(image, 'postImages', token);
     if(uploadImageError){
@@ -24,12 +24,12 @@ export const createPost = async (post, uid)=>{
     post.userId = uid;
     // Enviando a req para o back-end
     return await axios.post('/posts', post)
-    .then(({data}) => {
-        return {success: true};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    })
+        .then(({data}) => {
+            return {success: true};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        })
 }
 export const updatepost = async (post, oldImagePath, image) => {
     const axios = await createAxiosInstance();
@@ -38,18 +38,18 @@ export const updatepost = async (post, oldImagePath, image) => {
     let canUploadImage = false;
 
     if (!oldImagePath) canUploadImage = true;
-    
+
     // Deletar imagem antiga
     if (oldImagePath && image) {
         const reqDeleteImage = await deleteImage(oldImagePath, token);
-        
+
         if (!reqDeleteImage.success) {
             return {success: false, msg: reqDeleteImage.msg};
         }
 
         canUploadImage = true;
     }
-    
+
     // Enviar nova imagem
     if (canUploadImage) {
         const reqUploadImage = await uploadImage(image, 'profiles', token);
@@ -57,7 +57,7 @@ export const updatepost = async (post, oldImagePath, image) => {
         if (!reqUploadImage.success) {
             return {success: false, msg: reqUploadImage.msg};
         }
-    
+
         newUser.image = reqUploadImage.data;
     }
 };
@@ -112,18 +112,17 @@ export const updatepost = async (post, oldImagePath, image) => {
 //     }
 // }
 
-export const fetchPosts = async (limit = 10, species = null) => {
+export const fetchPosts = async (params) => {
     const axios = await createAxiosInstance();
-    
-    return await axios.get('/posts/')
-    .then(({data}) => {
-        // console.log("POSTS CHEGARAM: ", data.data)
-        result = data.data;
-        return {success: true, result};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    });
+    return await axios.get('/posts/', {params})
+        .then(({data}) => {
+            // console.log("POSTS CHEGARAM: ", data.data)
+            result = data.data;
+            return {success: true, result};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
 
     // try {
     //   // Inicia a query básica
@@ -137,61 +136,61 @@ export const fetchPosts = async (limit = 10, species = null) => {
     //     `)
     //     .order('created_at', { ascending: false })
     //     // .limit(limit);
-  
+
     //   // Adiciona o filtro de espécie, se necessário
     //   if (species) {
     //     query = query.eq('species', species);
     //   }
-  
+
     //   const { data, error } = await query;
-  
+
     //   if (error) {
     //     console.log("fetchPosts error: ", error);
     //     return { success: false, msg: "Não foi possível buscar as publicações" };
     //   }
-  
+
     //   return { success: true, data: data };
     // } catch (error) {
     //   console.log("fetchPosts error: ", error);
     //   return { success: false, msg: "Não foi possível buscar as publicações" };
     // }
 };
- 
+
 export const createPostLike = async (postLike)=>{
     const axios = await createAxiosInstance();
-    
+
     return await axios.post('/favorites/')
-    .then(({data}) => {
-        result = data.data;
-        return {success: true, result};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    });
+        .then(({data}) => {
+            result = data.data;
+            return {success: true, result};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
 }
 
 export const getPostLikes = async (postId)=>{
     const axios = await createAxiosInstance();
-    
+
     return await axios.get(`/favorites/${postId}`)
-    .then(({data}) => {
-        console.log("RESULTADO DOS LIKES: ", data);
-        result = data.data;
-        return {success: true, result};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    });
+        .then(({data}) => {
+            console.log("RESULTADO DOS LIKES: ", data);
+            result = data.data;
+            return {success: true, result};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
 }
 
 export const removePostLike = async (postId, userId)=>{
     try{
-        
+
         const {error} = await supabase
-        .from('postLikes')
-        .delete()
-        .eq('userId', userId)
-        .eq('postId', postId)
+            .from('postLikes')
+            .delete()
+            .eq('userId', userId)
+            .eq('postId', postId)
 
         if(error){
             console.log("postLike error: ", error);
@@ -207,15 +206,15 @@ export const removePostLike = async (postId, userId)=>{
 
 export const fetchPostDetails = async (postId)=>{
     const axios = await createAxiosInstance();
-    
+
     return await axios.get(`/posts/${postId}`)
-    .then(({data}) => {
-        result = data.data;
-        return {success: true, result};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    });
+        .then(({data}) => {
+            result = data.data;
+            return {success: true, result};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
     // try{
     //     const {data, error} = await supabase
     //     .from('posts')
@@ -243,25 +242,25 @@ export const fetchPostDetails = async (postId)=>{
 
 export const removePost = async (postId)=>{
     const axios = await createAxiosInstance();
-    
+
     return await axios.delete(`/posts/${postId}`)
-    .then(({data}) => {
-        return {success: true};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    });
+        .then(({data}) => {
+            return {success: true};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
 }
 
 export const fetchMyPosts = async (userId) => {
     const axios = await createAxiosInstance();
-    
+
     return await axios.get(`/posts/user/${userId}`)
-    .then(({data}) => {
-        result = Array.isArray(data.data) ? data.data : [];
-        return {success: true, result};
-    })
-    .catch((error) => {
-        return {success: false, msg: error.message};
-    });
+        .then(({data}) => {
+            result = Array.isArray(data.data) ? data.data : [];
+            return {success: true, result};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
 }

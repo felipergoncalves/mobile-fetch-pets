@@ -30,24 +30,25 @@ const Home = () => {
 
   const getPosts = async (species = null) => {
     if (!isLoading) setIsLoading(true);
+    console.log("Filtro: ", filter);
     if(species !== null && species === filter){
       species = null;
     }
 
-   try{
-    const res = await fetchPosts(limit, species);
-    if (res.success) {
-      // console.log("POSTS QUE CHEGARAM AQUI: ", res.data);
-      setPosts(res.result);
-      // console.log("Estado de posts após setPosts: ", posts);
-      // setHasMore(res.data.length === limit);
-      setFilter(species);
+    try{
+      const res = await fetchPosts({limit: limit, species: species});
+      if (res.success) {
+        // console.log("POSTS QUE CHEGARAM AQUI: ", res.data);
+        setPosts(res.result);
+        // console.log("Estado de posts após setPosts: ", posts);
+        // setHasMore(res.data.length === limit);
+        setFilter(species);
+      }
+    }catch(err){
+      console.error(err);
+    }finally{
+      setIsLoading(false);
     }
-   }catch(err){
-    console.error(err);
-   }finally{
-    setIsLoading(false);
-   }
   };
 
   const mockPosts = [
@@ -90,7 +91,7 @@ const Home = () => {
             keyExtractor={item=> item.id.toString()}
             renderItem={({item}) => <PostCard
                 item={item}
-                currentUser={user.user}
+                currentUser={user}
                 router={router}
               />
             }
