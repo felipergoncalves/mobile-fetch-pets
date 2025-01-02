@@ -23,19 +23,16 @@ const ChatScreen = () => {
     const [page, setPage] = useState(1); // Página atual
     const pageSize = 50; // Quantidade de mensagens por página
     const supabase = createSupabaseClient(token);
-    const users_ids = [userId, contactId];
 
     const fetchMessages = async (isInitialLoad = false) => {
         // if (loading || !hasMore) return;
 
         try {
-            setMessages([]);
             setLoading(true);
 
             const offset = (page - 1) * pageSize; // Calcula o offset baseado na página atual
             const response = await MessageService.getMessages(chatId, { limit: pageSize, offset });
 
-            console.log("Messages:", response.data);
             const messages = response.data || [];
             if (messages.length < pageSize) setHasMore(false);
 
@@ -68,11 +65,10 @@ const ChatScreen = () => {
         }
     }, [chatId]);
 
-    // Realtime para múltiplos chats do usuário
     useEffect(() => {
-        console.log("useEffect: chatId", chatId);
+        console.log("Subscribing to Realtime for chatId:", chatId);
         const channel = supabase
-            .channel(chatId)
+            .channel('messages')
             .on(
                 'postgres_changes',
                 {
@@ -82,8 +78,27 @@ const ChatScreen = () => {
                     filter: `chat_id=eq.${chatId}`
                 },
                 (payload) => {
-                    console.log("Channel: payload", payload);
-                    fetchMessages();
+                    console.log("Nova mensagem recebida via Realtime:", payload);
+
+                    if (payload.new) {
+                        // Atualize o estado de forma segura
+                        setMessages((prevMessages) => {
+                            const updatedMessages = [...prevMessages];
+
+                            // Evita duplicatas (confirme que o ID da mensagem é único)
+                            if (!prevMessages.some((msg) => msg.id === payload.new.id)) {
+                                updatedMessages.push(payload.new);
+                            }
+
+                            setGroupedMessages(groupMessagesByDate(updatedMessages)); // Atualize as mensagens agrupadas
+                            return updatedMessages;
+                        });
+
+
+                        setTimeout(() => {
+                            flatListRef.current?.scrollToEnd({ animated: true });
+                        }, 100);
+                    }
                 }
             )
             .subscribe();
@@ -91,8 +106,7 @@ const ChatScreen = () => {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [messages, setMessages, chatId]);
-
+    }, [chatId]);
 
     const groupMessagesByDate = (messages) => {
         const grouped = {};
@@ -104,14 +118,21 @@ const ChatScreen = () => {
             }
             grouped[date].push(message);
         });
+
+        // Certifique-se de ordenar as mensagens dentro de cada grupo
+        Object.values(grouped).forEach((msgs) => msgs.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)));
+
         return Object.entries(grouped).map(([date, msgs]) => ({ date, messages: msgs }));
     };
 
     const handleSend = async (content) => {
         try {
             if (!content) return;
-            await MessageService.sendMessage(userId, contactId, content); // Envia a mensagem
-            await fetchMessages(true ); // Atualiza as mensagens
+
+            // Envia a mensagem
+            await MessageService.sendMessage(userId, contactId, content);
+
+            // Evite chamar fetchMessages, apenas adicione a mensagem localmente
         } catch (error) {
             Alert.alert("Erro", "Erro ao enviar mensagem.");
         } finally {
@@ -120,6 +141,7 @@ const ChatScreen = () => {
             }, 100);
         }
     };
+
 
     const renderMessage = ({ item }) => (
         <View
@@ -196,9 +218,13 @@ const ChatScreen = () => {
                         data={groupedMessages}
                         keyExtractor={(item) => `group-${item.date}`}
                         renderItem={renderGroupedMessages}
-                        onEndReached={handleLoadMore} // Chama ao atingir o topo
-                        onEndReachedThreshold={0.1} // Quando 10% do topo for visível
+                        onEndReached={handleLoadMore}
+                        onEndReachedThreshold={0.1}
                         contentContainerStyle={{ paddingBottom: 20 }}
+                        initialNumToRender={10}
+                        maxToRenderPerBatch={5}
+                        windowSize={5}
+                        removeClippedSubviews={true}
                     />
                 </View>
             </ScreenWrapper>

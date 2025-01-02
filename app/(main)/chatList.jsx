@@ -32,7 +32,6 @@ const ChatList = () => {
     };
 
     useEffect(() => {
-        const supabase = createSupabaseClient(user.token);
         fetchConversations();
     }, [user.id]);
 
