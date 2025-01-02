@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
 import Icon from '../assets/icons';
 import { theme } from '../constants/theme';
@@ -6,9 +6,13 @@ import { hp } from '../helpers/common';
 
 const MessageInput = ({ onSendMessage, preMessage }) => {
   const [message, setMessage] = useState('');
-  if (preMessage && message.trim() === '') {
-    setMessage(preMessage);
-  }
+
+  useEffect(() => {
+    // Se preMessage estiver definido, atualiza o campo de mensagem
+    if (preMessage) {
+      setMessage(preMessage);
+    }
+  }, [preMessage]); // Executa sempre que preMessage mudar
 
   const handleSend = () => {
     if (message.trim()) {
