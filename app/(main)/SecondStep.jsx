@@ -106,9 +106,10 @@ const SecondStep = ({ onNext, onPickImage }) => {
   //Verificando se o pet já existe, se existir é uma edição
   useEffect(()=>{
     if(post && post.id) {
-      setFile(post.file);
+      setFile(post.image);
       setIsConfirmed(post.opt_in)
     }
+    console.log("POST ESTÁ VINDO ASSIM: ", post);
   }, [])
 
   return (
@@ -129,7 +130,7 @@ const SecondStep = ({ onNext, onPickImage }) => {
       {
               file ? (
                 <View style={styles.file}>
-                  <Image source={{uri: getFileUri(file)}} resizeMode='cover' style={{flex:1}} />
+                  <Image source={{uri: `${post.image}`}} resizeMode='cover' style={{flex:1}} />
                   <Pressable style={styles.closeIcon} onPress={()=>setFile(null)}>
                     <Icon name="delete" size={20} color="white" />
                   </Pressable>

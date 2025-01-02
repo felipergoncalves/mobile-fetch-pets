@@ -5,9 +5,12 @@ import { hp, wp} from '../helpers/common'
 import Avatar from './Avatar'
 import moment from 'moment'
 import Icon from '../assets/icons'
+import { getSupabaseFileUrl } from '../services/ImageService'
 import { createPostLike, removePostLike, getPostLikes } from '../services/postService'
 import Header from './Header'
+import BackButton from './BackButton'
 import Button from './Button'
+import { color } from '@rneui/themed/dist/config'
 import { getUserData } from '../services/userService'
 import {generateChatUUID} from "../helpers/generateChatId";
 import {useRouter} from "expo-router";
@@ -33,15 +36,33 @@ const PostCardDetails = ({
 
     const [likes, setLikes] = useState([]);
     const [user, setUser] = useState({});
+    const [isDisabled, setIsDisabled] = useState(false);
     const router = useRouter();
     const petName = item.sex === 'Fêmea' ? `a ${item?.pet_name}`: `o ${item?.pet_name}`;
     const preMessage = `Olá, gostaria de adotar ${petName}!`
 
+    const petDescriptions = [
+        `${item.pet_name} é ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} adorável, que está à procura de um lar cheio de amor e carinho. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} de vida e aproximadamente ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item.sex === 'Fêmea' ? 'a' : 'o'} ${item.sex === 'Fêmea' ? 'ela' : 'ele'} ${item.sex === 'Fêmea' ? 'perfeita' : 'perfeito'} para quem deseja aventuras e momentos felizes.`,
+        
+        `${item.pet_name} é ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} de ${item.age} ${item.age > 1 ? 'anos' : 'ano'} e aproximadamente ${item.weight_kg} kg. ${item.sex === 'Fêmea' ? 'cheia' : 'cheio'} de energia e amor, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} está ${item.sex === 'Fêmea' ? 'pronta' : 'pronto'} para fazer parte de uma nova família e compartilhar momentos de alegria. Será que você seria o(a) ${item.sex === 'Fêmea' ? 'companheira' : 'companheiro'} ideal?`,
+        
+        `Se você está procurando ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} que seja ${item.sex === 'Fêmea' ? 'carinhosa' : 'carinhoso'} e ${item.sex === 'Fêmea' ? 'cheia' : 'cheio'} de energia, ${item.pet_name} pode ser a escolha perfeita. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} de vida e um peso de ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} vai adorar ser parte da sua família.`,
+        
+        `Conheça ${item.pet_name}, ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} ${item.sex === 'Fêmea' ? 'encatandora' : 'encantador'} que está em busca de um lar. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} e cerca de ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item.sex === 'Fêmea' ? 'cheia' : 'cheio'} de carinho e amor para oferecer. Quem será o sortudo(a) que vai ${item.sex === 'Fêmea' ? 'adotá-la' : 'adotá-lo'}?`,
+        
+        `${item.pet_name} é o tipo de ${item.species.toLowerCase()} que vai conquistar seu coração. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} e aproximadamente ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} está em busca de uma nova família para dividir muitos momentos de alegria e carinho. Não perca a chance de ${item.sex === 'Fêmea' ? 'adotá-la' : 'adotá-lo'}!`
+      ];
+
+    const getRandomDescription = () => {
+        const randomIndex = Math.floor(Math.random() * petDescriptions.length);
+        return petDescriptions[randomIndex];
+    };
+    
     const getNameAdopter = async() => {
             try{
                 const res = await getUserData(item?.userId);
                 if (res.success) {
-                    return res.data.data.name;
+                    return res.data.user.name;
                 }
             }catch(err){
                 console.error(err);
@@ -75,6 +96,9 @@ const PostCardDetails = ({
         getPostLike(item?.id)
         setLikes(item?.postLikes);
         getUsers(item?.userId);
+
+        currentUser.id == user?.id ? setIsDisabled(true) : setIsDisabled(false);
+
     }, [])
 
     // const openPostDetails = ()=>{
@@ -200,6 +224,9 @@ const PostCardDetails = ({
                 {/* <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
                     <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
                 </TouchableOpacity> */}
+                <TouchableOpacity style={styles.likePost}>
+                    <Icon name="heart" size={24} fill={theme.colors.rose} color={theme.colors.rose} />
+                </TouchableOpacity>
                 {/* <Text style={styles.count}>
                     {
                         likes?.length
@@ -274,10 +301,13 @@ const PostCardDetails = ({
                 {/* Nome do usuário e descrição */}
                 <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#000' }}>
-                    {item?.user?.name}
+                    {user?.name}
                     </Text>
                     <Text style={{ fontSize: 14, color: '#555' }}>
-                        {item.sex === 'Fêmea' ? `Dono(a) da ${item.pet_name}` : `Dono(a) do ${item.pet_name}`}
+                        {item.sex === 'Fêmea' ? 
+                            `${user.gender === 'Feminino' ? 'Dona' : 'Dono'} da ${item.pet_name}` : 
+                            `${user.gender === 'Feminino' ? 'Dona' : 'Dono'} do ${item.pet_name}`
+                        }
                     </Text>
                 </View>
 
@@ -303,14 +333,30 @@ const PostCardDetails = ({
 
                 {/* Descrição do pet */}
             </View>
-            <View style={{ padding: 10 }}>
+            <View style={{ padding: 10, height: 110}}>
                 <Text style={{ fontSize: 14, color: theme.colors.text }}>
-                {`${item.pet_name} é ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} adorável, com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} de vida. Com um peso de aproximadamente ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item.age > 1 ? `${item.sex === 'Fêmea' ? 'uma companheira' : 'um companheiro'}` : 'uma companhia'} cheio(a) de energia e carinho. Sempre pront${item.sex === 'Fêmea' ? 'a' : 'o'} para novas aventuras, ${item.pet_name} está à procura de um lar onde possa compartilhar momentos de alegria e amor.`}
+                {getRandomDescription()}
                 </Text>
             </View>
             {/* Button */}
-            <View style={{width: "100%", padding: 10}}>
-                <Button title={'Adotar'} styles={{}} onPress={()=>{}} />
+            <View style={{ width: "100%", padding: 10 }}>
+                <TouchableOpacity
+                    style={[
+                    styles.button,
+                    isDisabled && styles.buttonDisabled
+                    ]}
+                    onPress={() => {}}
+                    disabled={isDisabled}
+                >
+                    <Text
+                    style={[
+                        styles.buttonText,
+                        isDisabled && styles.textDisabled
+                    ]}
+                    >
+                    Adotar
+                    </Text>
+                </TouchableOpacity>
             </View>
         {/* <View style={styles.footerButton}>
             <TouchableOpacity onPress={openPostDetails}>
@@ -375,7 +421,7 @@ const styles = StyleSheet.create({
         // elevation: 7,
     },
     postMedia:{
-        height: hp(42),
+        height: hp(43),
         width: '100%',
         zIndex: 0
         // borderCurve: 'continuous'
@@ -410,5 +456,29 @@ const styles = StyleSheet.create({
     count:{
         color: theme.colors.text,
         fontSize: hp(1.8),
-    }
+    },
+    button: {
+        shadowColor: theme.colors.dark,
+        shadowOffset: {width: 0, height: 10},
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+        backgroundColor: '#3198F4',
+        height: hp(6.6),
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderCurve: 'continuous',
+        borderRadius: theme.radius.xl
+      },
+      buttonDisabled: {
+        backgroundColor: '#CCCCCC',
+      },
+      buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+      },
+      textDisabled: {
+        color: '#888888',
+      },
 })

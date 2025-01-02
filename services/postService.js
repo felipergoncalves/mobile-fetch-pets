@@ -61,99 +61,18 @@ export const updatepost = async (post, oldImagePath, image) => {
         newUser.image = reqUploadImage.data;
     }
 };
-// export const fetchPosts = async (limit=10, userId, species=null)=>{
-//     try{
-//         if(userId){
-//             const {data, error} = await supabase
-//             .from('posts')
-//             .select(`
-//                 *,
-//                 user: users (id, name, image),
-//                 postLikes (*),
-//                 comments (count)
-//             `)
-//             .order('created_at', {ascending: false})
-//             .eq('userId', userId)
-//             .limit(limit);
-
-//             // Se o filtro de species for passado, adicionar o filtro de espécie
-//             if (species) {
-//                 query = query.eq('species', species);
-//             }
-
-//             if(error){
-//                 console.log("fetchPosts error: ", error);
-//                 return {success: false, msg: "Não foi possível buscar as publicações"}
-//             }
-
-//             return {success: true, data: data};
-//         }else{
-//             const {data, error} = await supabase
-//             .from('posts')
-//             .select(`
-//                 *,
-//                 user: users (id, name, image),
-//                 postLikes (*),
-//                 comments (count)
-//             `)
-//             .order('created_at', {ascending: false})
-//             .limit(limit);
-
-//             if(error){
-//                 console.log("fetchPosts error: ", error);
-//                 return {success: false, msg: "Não foi possível buscar as publicações"}
-//             }
-
-//             return {success: true, data: data};
-//         }
-//     }catch(error){
-//         console.log("fetchPosts error: ", error);
-//         return {success: false, msg: "Não foi possível buscar as publicações"}
-//     }
-// }
 
 export const fetchPosts = async (params) => {
     const axios = await createAxiosInstance();
     return await axios.get('/posts/', {params})
         .then(({data}) => {
-            // console.log("POSTS CHEGARAM: ", data.data)
-            result = data.data;
+            console.log("POSTS CHEGARAM: ", data.data)
+            const result = data.data.filter(post => post.adopter === null);
             return {success: true, result};
         })
         .catch((error) => {
             return {success: false, msg: error.message};
         });
-
-    // try {
-    //   // Inicia a query básica
-    //   let query = supabase
-    //     .from('posts')
-    //     .select(`
-    //       *,
-    //       user: users (id, name, image),
-    //       postLikes (*),
-    //       comments (count)
-    //     `)
-    //     .order('created_at', { ascending: false })
-    //     // .limit(limit);
-
-    //   // Adiciona o filtro de espécie, se necessário
-    //   if (species) {
-    //     query = query.eq('species', species);
-    //   }
-
-    //   const { data, error } = await query;
-
-    //   if (error) {
-    //     console.log("fetchPosts error: ", error);
-    //     return { success: false, msg: "Não foi possível buscar as publicações" };
-    //   }
-
-    //   return { success: true, data: data };
-    // } catch (error) {
-    //   console.log("fetchPosts error: ", error);
-    //   return { success: false, msg: "Não foi possível buscar as publicações" };
-    // }
 };
 
 export const createPostLike = async (postLike)=>{
@@ -215,29 +134,6 @@ export const fetchPostDetails = async (postId)=>{
         .catch((error) => {
             return {success: false, msg: error.message};
         });
-    // try{
-    //     const {data, error} = await supabase
-    //     .from('posts')
-    //     .select(`
-    //         *,
-    //         user: users (id, name, image),
-    //         postLikes (*),
-    //         comments(*, user: users(id, name, image))
-    //     `)
-    //     .eq('id', postId)
-    //     .order("created_at", {ascending: false, foreignTable: 'comments'})
-    //     .single();
-
-    //     if(error){
-    //         console.log("fetchPostsDetails error: ", error);
-    //         return {success: false, msg: "Não foi possível buscar as publicações"}
-    //     }
-
-    //     return {success: true, data: data};
-    // }catch(error){
-    //     console.log("fetchPostsDetails error: ", error);
-    //     return {success: false, msg: "Não foi possível buscar as publicações"}
-    // }
 }
 
 export const removePost = async (postId)=>{
@@ -261,6 +157,21 @@ export const fetchMyPosts = async (userId) => {
             return {success: true, result};
         })
         .catch((error) => {
+            return {success: false, msg: error.message};
+        });
+}
+
+export const fetchMyAdoptedPets = async (userId) => {
+    const axios = await createAxiosInstance();
+
+    return await axios.get(`/posts/adopted/${userId}`)
+        .then(({data}) => {
+            result = Array.isArray(data.data) ? data.data : [];
+            console.log("Resultado dos pets adotados: ", result);
+            return {success: true, result};
+        })
+        .catch((error) => {
+            console.log("Deu ruim aqui em")
             return {success: false, msg: error.message};
         });
 }

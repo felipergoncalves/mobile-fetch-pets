@@ -7,8 +7,6 @@ import {
     Image,
     ActivityIndicator,
     TouchableOpacity,
-    Modal,
-    Pressable,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import ScreenWrapper from '../../components/ScreenWrapper';
@@ -18,15 +16,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import Navigator from '../../components/Navigator';
 import { fetchMyPosts, removePost } from '../../services/postService';
-import Icon from '../../assets/icons';
 
 const PetsForAdoption = () => {
     const { user } = useAuth();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedPost, setSelectedPost] = useState(null);
 
     useEffect(() => {
         const loadPosts = async () => {
@@ -40,32 +35,11 @@ const PetsForAdoption = () => {
             setLoading(false);
         };
         loadPosts();
-        // console.log("PUBLICAÇÕES ESTÃO ASSIM: ", posts);
     }, []);
 
-    const openOptions = (post) => {
-        setSelectedPost(post);
-        setIsModalVisible(true);
-    };
-
-    const closeOptions = () => {
-        setIsModalVisible(false);
-        setSelectedPost(null);
-    };
-
-    const handleDelete = async (postId) => {
-        const result = await removePost(postId);
-
-        setLoading(true);
-
-        if (!result.success) {
-            Alert.alert('Erro', 'Não foi possível excluir o post.');
-            setLoading(false);
-            return
-        }
-        Alert.alert('Sucesso', 'Post excluído com sucesso.');
-        setLoading(false);
-    };
+    const openPostDetails = (postId)=>{
+        router.push({pathname: 'postDetails', params:{postId: postId, currentUser: user}})
+    }
 
     return (
         <View style={{ flex: 1 }}>
@@ -83,19 +57,20 @@ const PetsForAdoption = () => {
                             <View style={styles.listContainer}>
                                 {posts.map((item) => (
                                     <View key={item.id} style={styles.card}>
-                                        <View style={{flexDirection: "row", alignItems: "center", gap: 10}}>
-                                            <Image
-                                                source={{ uri: `${item?.image}` }}
-                                                style={styles.cardImage}
-                                                resizeMode="cover"
-                                            />
-                                            <View style={styles.cardContent}>
-                                                <Text style={{fontWeight: "bold"}}>{item.pet_name}</Text>
-                                                <Text style={styles.cardDescription}>{item.behavior}</Text>
+                                        <TouchableOpacity onPress={() => openPostDetails(item.id)}>
+                                            <View style={{flexDirection: "row", alignItems: "center", gap: 10}}>
+                                                <Image
+                                                    source={{ uri: `${item?.image}` }}
+                                                    style={styles.cardImage}
+                                                    resizeMode="cover"
+                                                />
+                                                <View style={styles.cardContent}>
+                                                    <Text style={{fontWeight: "bold"}}>{item.pet_name}</Text>
+                                                    <Text style={styles.cardDescription}>
+                                                    {`${item.sex} | ${item.age} ${item.age === 1 ? 'ano' : 'anos'}`}
+                                                    </Text>
+                                                </View>
                                             </View>
-                                        </View>
-                                        <TouchableOpacity onPress={() => openOptions(item)}>
-                                            <Icon name="threeDotsVertical" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
                                         </TouchableOpacity>
                                     </View>
                                 ))}
@@ -109,41 +84,6 @@ const PetsForAdoption = () => {
                 </View>
             </ScreenWrapper>
             <Navigator user={user} />
-
-            {/* Modal de opções */}
-            <Modal
-                transparent={true}
-                visible={isModalVisible}
-                animationType="fade"
-                onRequestClose={closeOptions}
-            >
-                <Pressable style={styles.overlay} onPress={closeOptions}>
-                    <View style={styles.modalContainer}>
-                        <TouchableOpacity
-                            style={styles.modalOption}
-                            onPress={() => {
-                                console.log("Editar post:", selectedPost);
-                                router.push({ pathname: 'newPost', params: { post: JSON.stringify(selectedPost) } });
-                                closeOptions();
-                            }}
-                        >
-                            <Icon name="edit" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
-                            <Text style={styles.modalOptionText}>Editar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.modalOption}
-                            onPress={async () => {
-                                await handleDelete(selectedPost.id);
-                                closeOptions();
-                            }}
-                        >
-                            <Icon name="delete" size={hp(3.4)} strokeWidth={3} color={theme.colors.text} />
-                            <Text style={styles.modalOptionText}>Excluir</Text>
-                        </TouchableOpacity>
-                    </View>
-                </Pressable>
-            </Modal>
-
         </View>
     );
     
@@ -190,33 +130,6 @@ const styles = StyleSheet.create({
         zIndex: 3,
         resizeMode: 'contain',
         borderRadius: theme.radius.sm
-    },
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContainer: {
-        width: wp(80),
-        backgroundColor: 'white',
-        borderRadius: theme.radius.md,
-        padding: wp(4),
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    modalOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: hp(1.5),
-    },
-    modalOptionText: {
-        marginLeft: wp(2),
-        fontSize: hp(2),
-        color: theme.colors.text,
     },
 });
 

@@ -36,7 +36,7 @@ const Welcome = () => {
                     Já tem uma conta?
                 </Text>
                 <Pressable onPress={()=> router.push('login')}>
-                    <Text style={[styles.loginText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold}]}>
+                    <Text style={[styles.loginText, {color: theme.colors.primaryDark, fontWeight: theme.fonts.semibold, borderBottomWidth: 1, borderBottomColor: theme.colors.primaryDark}]}>
                         Entrar
                     </Text>
                 </Pressable>
@@ -62,7 +62,8 @@ const styles = StyleSheet.create({
         width: wp(80),
         alignSelf: "center",
         position: 'relative',
-        zIndex: 3
+        zIndex: 3,
+        top: 25
     },
     pawsImage: {
         height: hp(20),
@@ -85,17 +86,17 @@ const styles = StyleSheet.create({
         fontSize: hp(4),
         textAlign: 'center',
         fontWeight: theme.fonts.extraBold,
-        top: -100
+        top: -80
     },
     subtitle:{
         textAlign: 'center',
         paddingHorizontal: wp(10),
         fontSize: hp(1.7),
         color: theme.colors.text,
-        top: -100
+        top: -80
     },
     footer:{
-        bottom: 10,
+        bottom: 20,
         gap: 30,
         width: '100%'
     },

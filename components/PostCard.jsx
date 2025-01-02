@@ -31,10 +31,27 @@ const PostCard = ({
     const [likes, setLikes] = useState([]);
     const [user, setUser] = useState({});
 
+    const petDescriptions = [
+        `${item.pet_name} é ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} adorável, que está à procura de um lar cheio de amor e carinho. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} de vida e aproximadamente ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item.sex === 'Fêmea' ? 'a' : 'o'} ${item.sex === 'Fêmea' ? 'ela' : 'ele'} ${item.sex === 'Fêmea' ? 'perfeita' : 'perfeito'} para quem deseja aventuras e momentos felizes.`,
+        
+        `${item.pet_name} é ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} de ${item.age} ${item.age > 1 ? 'anos' : 'ano'} e aproximadamente ${item.weight_kg} kg. ${item.sex === 'Fêmea' ? 'cheia' : 'cheio'} de energia e amor, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} está pronto(a) para fazer parte de uma nova família e compartilhar momentos de alegria. Será que você seria o(a) ${item.sex === 'Fêmea' ? 'companheira' : 'companheiro'} ideal?`,
+        
+        `Se você está procurando ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} que seja ${item.sex === 'Fêmea' ? 'carinhosa' : 'carinhoso'} e ${item.sex === 'Fêmea' ? 'cheia' : 'cheio'} de energia, ${item.pet_name} pode ser a escolha perfeita. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} de vida e um peso de ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} vai adorar ser parte da sua família.`,
+        
+        `Conheça ${item.pet_name}, ${item.sex === 'Fêmea' ? 'uma' : 'um'} ${item.species.toLowerCase()} ${item.sex === 'Fêmea' ? 'encatandora' : 'encantador'} que está em busca de um lar. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} e cerca de ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item.sex === 'Fêmea' ? 'cheia' : 'cheio'} de carinho e amor para oferecer. Quem será o sortudo(a) que vai ${item.sex === 'Fêmea' ? 'adotá-la' : 'adotá-lo'}?`,
+        
+        `${item.pet_name} é o tipo de ${item.species.toLowerCase()} que vai conquistar seu coração. Com ${item.age} ${item.age > 1 ? 'anos' : 'ano'} e aproximadamente ${item.weight_kg} kg, ${item.sex === 'Fêmea' ? 'ela' : 'ele'} está em busca de uma nova família para dividir muitos momentos de alegria e carinho. Não perca a chance de ${item.sex === 'Fêmea' ? 'adotá-la' : 'adotá-lo'}!`
+      ];
+
     useEffect(() => {
         setLikes(item?.postLikes);
         getUsers();
     }, [])
+
+    const getRandomDescription = () => {
+        const randomIndex = Math.floor(Math.random() * petDescriptions.length);
+        return petDescriptions[randomIndex];
+    };
 
     const getUsers = async() => {
         try{
@@ -94,8 +111,6 @@ const PostCard = ({
     const createdAt = moment(item?.created_at).format('MMM D');
     // const liked = likes.filter(like=> like.userId == currentUser?.id)[0]? true: false;
     const [showFullText, setShowFullText] = useState(false);
-
-    const fullText = `${item?.pet_name} é ${item?.sex === 'Fêmea' ? 'uma' : 'um'} ${item?.species?.toLowerCase()} adorável, com ${item?.age} ${item?.age > 1 ? 'anos' : 'ano'} de vida. Com um peso de aproximadamente ${item?.weight_kg} kg, ${item?.sex === 'Fêmea' ? 'ela' : 'ele'} é ${item?.age > 1 ? `${item?.sex === 'Fêmea' ? 'uma companheira' : 'um companheiro'}` : 'uma companhia'} cheio(a) de energia e carinho. Sempre pront${item?.sex === 'Fêmea' ? 'a' : 'o'} para novas aventuras, ${item?.pet_name} está à procura de um lar onde possa compartilhar momentos de alegria e amor.`;
     
   return (
     <View style={[styles.container, hasShadow && shadowStyles]}>
@@ -164,7 +179,7 @@ const PostCard = ({
       <View style={{position: "relative"}}>
       <View style={!showFullText ? styles.textContainer : null}>
         <Text style={{ fontSize: 14, color: theme.colors.text }} numberOfLines={showFullText ? undefined : 3}>
-          {fullText}
+          {getRandomDescription()}
         </Text>
       </View>
       {!showFullText && (
