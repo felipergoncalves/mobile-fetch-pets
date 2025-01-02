@@ -4,8 +4,11 @@ import Icon from '../assets/icons';
 import { theme } from '../constants/theme';
 import { hp } from '../helpers/common';
 
-const MessageInput = ({ onSendMessage }) => {
+const MessageInput = ({ onSendMessage, preMessage }) => {
   const [message, setMessage] = useState('');
+  if (preMessage && message.trim() === '') {
+    setMessage(preMessage);
+  }
 
   const handleSend = () => {
     if (message.trim()) {

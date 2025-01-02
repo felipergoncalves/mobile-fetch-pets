@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const ChatScreen = () => {
     const route = useRoute();
     const token = AsyncStorage.getItem('@auth_token');
-    const { userId, chatId, contactId, contactName } = route.params || {};
+    const { userId, chatId, contactId, contactName, preMessage } = route.params || {};
     const [messages, setMessages] = useState([]);
     const [groupedMessages, setGroupedMessages] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -230,7 +230,7 @@ const ChatScreen = () => {
             </ScreenWrapper>
 
             <View style={{ backgroundColor: "#fcfcfc", paddingVertical: wp(4) }}>
-                <MessageInput onSendMessage={(content) => handleSend(content)} />
+                <MessageInput onSendMessage={(content) => handleSend(content)} preMessage={preMessage} />
             </View>
         </View>
     );

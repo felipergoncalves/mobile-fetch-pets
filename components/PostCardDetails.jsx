@@ -34,12 +34,13 @@ const PostCardDetails = ({
     const [likes, setLikes] = useState([]);
     const [user, setUser] = useState({});
     const router = useRouter();
+    const petName = item.sex === 'Fêmea' ? `a ${item?.pet_name}`: `o ${item?.pet_name}`;
+    const preMessage = `Olá, gostaria de adotar ${petName}!`
 
     const getNameAdopter = async() => {
             try{
-                const res = await getUserData(item?.adopter);
+                const res = await getUserData(item?.userId);
                 if (res.success) {
-                    console.log("USER DO PET CHEGARAM: ", res.data);
                     return res.data.data.name;
                 }
             }catch(err){
@@ -284,7 +285,7 @@ const PostCardDetails = ({
                 <TouchableOpacity onPress={async () => {
                     router.push({
                         pathname: '/(main)/chatScreen',
-                        params: { userId: currentUser.id, chatId: generateChatUUID(currentUser.id, item.adopter), contactId: item.adopter, contactName: await getNameAdopter() },
+                        params: { userId: currentUser.id, chatId: generateChatUUID(currentUser.id, item.userId), contactId: item.userId,  preMessage: preMessage, contactName: await getNameAdopter() },
                     })
                 }}>
                     <Icon name="chat" size={24} color={theme.colors.primary} />
