@@ -75,42 +75,13 @@ const SecondStep = ({ onNext, onPickImage }) => {
   
   }
 
-  const isLocalFile = file=>{
-        if(!file) return null;
-        if(typeof file == 'object') return true;
-    
-        return false;
-  }
-
-  const getFileType = file =>{
-    if(!file) return null;
-    if(isLocalFile(file)){
-      return file.type;
-    }
-
-    //check image or video for remote file
-    if(file.includes('postImage')){
-      return 'image';
-    }
-    return 'video';
-  }
-
-  const getFileUri = file=>{
-        if(!file) return null;
-        if(isLocalFile(file)){
-          return file.uri;
-        }
-    
-        return getSupabaseFileUrl(file)?.uri;
-  }
-
   //Verificando se o pet já existe, se existir é uma edição
   useEffect(()=>{
     if(postToEdit && postToEdit.id) {
       setFile(postToEdit.image);
       setIsConfirmed(postToEdit.opt_in)
     }
-    console.log("POST ESTÁ VINDO ASSIM: ", postToEdit);
+    //console.log("POST ESTÁ VINDO ASSIM: ", postToEdit);
   }, [])
 
   return (

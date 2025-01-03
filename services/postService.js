@@ -40,7 +40,7 @@ export const updatepost = async (post, oldImagePath, image) => {
     if (!oldImagePath) canUploadImage = true;
 
     // Deletar imagem antiga
-    if (oldImagePath && image) {
+    if (oldImagePath !== image) {
         const reqDeleteImage = await deleteImage(oldImagePath, token);
 
         if (!reqDeleteImage.success) {
@@ -52,21 +52,43 @@ export const updatepost = async (post, oldImagePath, image) => {
 
     // Enviar nova imagem
     if (canUploadImage) {
-        const reqUploadImage = await uploadImage(image, 'profiles', token);
+
+        const newImage = {
+            uri: image.uri,
+            type: image.mimeType,
+            name: image.fileName
+        }
+
+        const reqUploadImage = await uploadImage(newImage, 'postImages', token);
 
         if (!reqUploadImage.success) {
             return {success: false, msg: reqUploadImage.msg};
         }
 
-        newUser.image = reqUploadImage.data;
+        post.image = reqUploadImage.data;
+
     }
+
+    if (post.file) {
+        delete post.file;
+    }
+
+    return await axios.patch(`/posts/${post.id}`, post)
+    .then(({data}) => {
+        return {success: true};
+    })
+    .catch((error) => {
+        return {success: false, msg: error.message};
+    });
 };
 
 export const fetchPosts = async (params) => {
+
     const axios = await createAxiosInstance();
+
     return await axios.get('/posts/', {params})
         .then(({data}) => {
-            console.log("POSTS CHEGARAM: ", data.data)
+            //console.log("POSTS CHEGARAM: ", data.data)
             const result = data.data.filter(post => post.adopter === null);
             return {success: true, result};
         })

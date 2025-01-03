@@ -53,11 +53,15 @@ const FirstStep = ({ onNext }) => {
       setBreedOptions([]);
     }
     // Resetando o valor da raça ao mudar a espécie
-    setBreed('');
+    //setBreed('');
   }, [species]);
 
   const handleNext = () => {
-    console.log("ALL: ", !petName, !sex, !species, !breed, !age, !weight, !healthStatus)
+    if (postToEdit.breed) {
+      setBreed(postToEdit.breed);
+      onNext({ petName, sex, species, breed, age, weight, healthStatus, id });  
+      return;
+    }
     if (!petName || !sex || !species || !breed || !age || !weight || !healthStatus) {
       Alert.alert("Novo Pet", "Por favor, preencha todos os campos");
       return;
@@ -73,18 +77,16 @@ const FirstStep = ({ onNext }) => {
       setKeyboardVisible(false);
     });
 
-    console.log(postToEdit);
-    if(postToEdit && postToEdit.id) {
+    if(postToEdit.id) {
+      setSpecies(postToEdit.species);
       setId(postToEdit.id);
       setPetName(postToEdit.pet_name);
       setSex(postToEdit.sex);
-      setSpecies(postToEdit.species);
-      setBreed(postToEdit.breed);
       setAge(postToEdit.age.toString());
       setWeight(postToEdit.weight_kg.toString());
       setHealthStatus(postToEdit.health_status);
+      setBreed(postToEdit.breed); // Atualiza o estado
     }
-
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
@@ -140,7 +142,12 @@ const FirstStep = ({ onNext }) => {
           <View style={styles.inputContainer}>
             <Text>Raça</Text>
             <View style={styles.pickerContainer}>
-              <Picker selectedValue={postToEdit.id ? postToEdit.breed : breed} value={breed} onValueChange={setBreed} style={styles.picker} enabled={species !== ''}>
+              <Picker
+                selectedValue={breed}
+                onValueChange={setBreed}
+                style={styles.picker} 
+                enabled={species !== ''}
+              >
                 <Picker.Item label="Selecione" value="" />
                 {breedOptions.map((breedOption, index) => (
                   <Picker.Item key={index} label={breedOption} value={breedOption} />

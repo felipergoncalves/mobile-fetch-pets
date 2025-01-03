@@ -41,6 +41,7 @@ const signUpPage = () => {
     const { isUpdate } = useLocalSearchParams();
     const [ image, setNewImage ] = useState(null);
     const [ houseNumber, setHouseNumber ] = useState('');
+    const [tempZip, setTempZip] = useState(''); 
     
     const isUpdateBoolean = isUpdate === 'true';
 
@@ -49,6 +50,7 @@ const signUpPage = () => {
         if (isUpdateBoolean) {
             setNewUser(user);
             setHouseNumber(user?.houseNumber);
+            setTempZip(user?.zip);
         }
     }, [isUpdate]);
 
@@ -164,10 +166,7 @@ const signUpPage = () => {
     }
 
     const getCep = async (zip) => {
-        if (zip.length < 8) {
-            return;
-        }
-        newUser.zip = zip;
+        setNewUser((prevUser) => ({ ...prevUser, zip: zip})); // Atualiza o valor do zip
         setLoading(true);
         const res = await getAdressInformation(zip);
 
@@ -177,6 +176,14 @@ const signUpPage = () => {
             setNewUser({ ...newUser, stateAndCity: res.data.estado + "/" + res.data.localidade, address: res.data.logradouro, zip: zip });
         }
     }
+
+    const handleZipChange = async (text) => {
+        setTempZip(text); // Atualiza o valor temporário do input
+    
+        if (text.length === 8) {
+            await getCep(text); // Chama a função para buscar o CEP apenas quando tem 8 caracteres
+        }
+    };
 
     return (
         <ScreenWrapper bg={'white'}>
@@ -218,7 +225,7 @@ const signUpPage = () => {
                                     </Text>
                                     <PhoneInput
                                         onCountryCodeChange={(value) => setNewUser({ ...newUser, phone: value })}
-                                        phoneValue={isUpdate ? user?.phoneNumber : newUser.phoneNumber}
+                                        phoneValue={newUser.phoneNumber}
                                         onPhoneChange={(value) => setNewUser({ ...newUser, phoneNumber: value })}
                                         style={{ marginBottom: 10 }}
                                     />
@@ -323,11 +330,11 @@ const signUpPage = () => {
                                         CEP
                                     </Text>
                                     <Input
-                                        onChangeText={async (text) => { await getCep(text) }}
+                                        onChangeText={handleZipChange}
                                         containerStyle={{ marginBottom: 10 }}
                                         placeholder="Digite seu CEP"
                                         keyboardType="number-pad"
-                                        value={newUser.zip}
+                                        value={tempZip} // Usar o valor temporário enquanto o usuário digita
                                     />
                                     {/* Numero */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>

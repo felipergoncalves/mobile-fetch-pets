@@ -34,7 +34,7 @@ import { supabaseUrl } from '../constants'
 export const uploadImage = async (image, filePath, token) => {
     const supabase = createSupabaseClient(token);
 
-    const { name, uri, type } = image;
+    const { uri, type, name } = image;
 
     const fileBase64 = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64
