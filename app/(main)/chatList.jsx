@@ -11,6 +11,7 @@ import { theme } from '../../constants/theme';
 import { MessageService } from '../../services/MessageService';
 import { createSupabaseClient } from '../../constants/supabaseInstance';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getUserData } from '../../services/userService';
 
 const ChatList = () => {
     const { user } = useAuth();
@@ -26,7 +27,20 @@ const ChatList = () => {
             setLoading(true);
             const response = await MessageService.getConversations(user.id);
             console.log("Conversations:", response.data);
-            setConversations(response.data);
+            const fetchedConversations = response.data;
+            // setConversations(response.data);
+
+            const conversationsWithImages = await Promise.all(
+                fetchedConversations.map(async (conversation) => {
+                    const contactData = await getUserData(conversation.contactId); // Busca os dados do contato
+                    return {
+                        ...conversation,
+                        contactName: contactData.result.name, // Nome do contato
+                        contactImage: contactData.result.image, // Imagem do contato
+                    };
+                })
+            );
+            setConversations(conversationsWithImages);
         } catch (error) {
             console.error("Erro ao buscar conversas:", error);
         } finally {
@@ -99,9 +113,14 @@ const ChatList = () => {
                     params: { userId: user.id, chatId: item.chat_id, contactId: item.contactId, contactName: item.contactName },
                 })
             }
-            style={{ padding: 15, flexDirection: "row", gap: 10 }}
+            style={{ padding: 15, flexDirection: "row", gap: 10, backgroundColor: "#fafafa", borderRadius: theme.radius.md, marginBottom: 3}}
         >
-            <Avatar />
+            <Avatar
+                size={hp(4.5)}
+                uri={item.contactImage}
+                rounded={theme.radius.xxl*5}
+                style={{ width: 50, height: 50, marginRight: 10 }}
+            />
             <View>
                 <Text style={{ fontSize: hp(2.3), fontWeight: theme.fonts.medium }}>
                     {item.contactName}

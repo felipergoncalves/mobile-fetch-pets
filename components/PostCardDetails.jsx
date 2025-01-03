@@ -73,6 +73,7 @@ const PostCardDetails = ({
         try{
             const res = await getUserData(item?.userId);
             if (res.success) {
+                console.log("RESULTADO VEM ASSIM: ", res.result)
                 setUser(res.result);
             }
         }catch(err){
@@ -97,10 +98,14 @@ const PostCardDetails = ({
         setLikes(item?.postLikes);
         getUsers(item?.userId);
 
+        console.log("CURRENT USER: ", currentUser);
+        console.log("ITEM: ", item);
+        console.log("USER: ", user);
+
         currentUser.id == user?.id ? setIsDisabled(true) : setIsDisabled(false);
 
-        console.log("POST CARD DETAILS: ", item);
-        console.log("USER: ", user);
+        // console.log("POST CARD DETAILS: ", item);
+        // console.log("USER: ", user);
 
     }, [])
 
@@ -315,24 +320,24 @@ const PostCardDetails = ({
                 </View>
 
                 {/* Ícone de chat à direita */}
-                {item.adopter === null && (
-                    <TouchableOpacity
-                        onPress={async () => {
-                            router.push({
-                                pathname: '/(main)/chatScreen',
-                                params: {
-                                    userId: currentUser.id,
-                                    chatId: generateChatUUID(currentUser.id, item.userId),
-                                    contactId: item.userId,
-                                    preMessage: preMessage,
-                                    contactName: await getNameAdopter(),
-                                },
-                            });
-                        }}
-                    >
-                        <Icon name="chat" size={24} color={theme.colors.primary} />
-                    </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                    onPress={async () => {
+                        router.push({
+                            pathname: '/(main)/chatScreen',
+                            params: {
+                                userId: currentUser.id,
+                                chatId: generateChatUUID(currentUser.id, item.userId),
+                                contactId: item.userId,
+                                preMessage: preMessage,
+                                contactName: await getNameAdopter(),
+                            },
+                        });
+                    }}
+                    disabled={currentUser.id == user?.id || item.adopter !== null}
+                >
+                    <Icon name="chat" size={24} color={currentUser.id == user?.id || item.adopter !== null ? "#CCCCCC" : theme.colors.primary} />
+                </TouchableOpacity>
+                
 
                 {/* Descrição do pet */}
             </View>
@@ -346,7 +351,7 @@ const PostCardDetails = ({
                 <TouchableOpacity
                     style={[
                     styles.button,
-                    isDisabled && styles.buttonDisabled
+                    (currentUser.id == user?.id || item.adopter !== null) && styles.buttonDisabled
                     ]}
                     onPress={async () => {
                         router.push({
@@ -360,7 +365,7 @@ const PostCardDetails = ({
                             },
                         });
                     }}
-                    disabled={isDisabled}
+                    disabled={currentUser.id == user?.id || item.adopter !== null}
                 >
                     <Text
                     style={[
