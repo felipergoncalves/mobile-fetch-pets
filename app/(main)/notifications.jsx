@@ -4,11 +4,12 @@ import ScreenWrapper from '../../components/ScreenWrapper'
 import Navigator from '../../components/Navigator'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRouter } from 'expo-router'
-import { fetchNotifications } from '../../services/notificationsService'
+import { fetchNotifications } from '../../services/notificationsService-ant'
 import { wp, hp } from '../../helpers/common'
 import { theme } from '../../constants/theme'
 import NotificationItem from '../../components/NotificationItem'
 import Header from '../../components/Header'
+import {NotificationService} from "../../services/notificationsService";
 
 
 const Notifications = () => {
@@ -21,9 +22,9 @@ const Notifications = () => {
   }, [])
 
   const getNotifications = async ()=>{
-    let res = await fetchNotifications(user.id)
+    let res = await NotificationService.fetchNotificationsByUserId(user.id)
     if(res.success){
-      setNotifications(res.data);
+      setNotifications(res.result);
     }
   }
   
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
   },
   listStyle:{
     paddingVertical: 20,
-    gap: 10
+    gap: 10,
   },
   noData:{
     fontSize: hp(1.8),

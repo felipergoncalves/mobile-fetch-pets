@@ -10,6 +10,7 @@ import { useRoute } from "@react-navigation/native";
 import { MessageService } from "../../services/MessageService";
 import { createSupabaseClient } from "../../constants/supabaseInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotificationService } from "../../services/notificationsService";
 
 const ChatScreen = () => {
     const route = useRoute();
@@ -90,7 +91,7 @@ const ChatScreen = () => {
                                 updatedMessages.push(payload.new);
                             }
 
-                            setGroupedMessages(groupMessagesByDate(updatedMessages)); // Atualize as mensagens agrupadas
+                            setGroupedMessages(groupMessagesByDate(updatedMessages));
                             return updatedMessages;
                         });
 
@@ -131,8 +132,7 @@ const ChatScreen = () => {
 
             // Envia a mensagem
             await MessageService.sendMessage(userId, contactId, content);
-
-            // Evite chamar fetchMessages, apenas adicione a mensagem localmente
+            await handleSendNotification();
         } catch (error) {
             Alert.alert("Erro", "Erro ao enviar mensagem.");
         } finally {
@@ -141,6 +141,18 @@ const ChatScreen = () => {
             }, 100);
         }
     };
+
+    const handleSendNotification = async () => {
+        // Envia notificação
+        const notification = {
+            senderId: userId,
+            receiverId: contactId,
+            title: "Nova mensagem recebida",
+            data: JSON.stringify({ chatId: chatId, type: "Chat" }),
+        }
+
+        await NotificationService.createNotification(notification);
+    }
 
 
     const renderMessage = ({ item }) => (

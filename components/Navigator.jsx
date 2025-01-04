@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Pressable } from 'react-native';
+import {View, Pressable, Text} from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import Avatar from './Avatar';
 import Icon from '../assets/icons';
 import { theme } from '../constants/theme';
 import { hp, wp } from '../helpers/common';
+import {createSupabaseClient} from "../constants/supabaseInstance";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {NotificationService} from "../services/notificationsService";
+import {getUserData} from "../services/userService";
 
 const Navigator = ({ user }) => {
   const router = useRouter();
+  const token = AsyncStorage.getItem('@auth_token');
+  const supabase = createSupabaseClient(token);
   const segments = useSegments(); // Obter o segmento (rota) atual
   const [notificationCount, setNotificationCount] = useState(0);
 
@@ -15,10 +21,52 @@ const Navigator = ({ user }) => {
   const isRouteActive = (routeName) => segments.includes(routeName);
 
   const handleNewNotification = async (payload) => {
-    if(payload.eventType == "INSERT" && payload.new.id){
-      setNotificationCount(prev=>prev+1);
+    if(payload.eventType === "INSERT" && payload.new.id){
+      console.log("executed handleNewNotification")
+      await getNotifications();
     }
   }
+
+  const getNotifications = async () => {
+    try{
+      const res = await NotificationService.fetchNotificationsByUserId(user.id, {read: false});
+      if (res.success) {
+        setNotificationCount(res.result.length);
+      }
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    getNotifications();
+  }, [])
+
+  useEffect(() => {
+    console.log("Subscribing to Realtime for notification:", user.id);
+    const notificationsChannel = supabase
+        .channel('notifications')
+        .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'notifications',
+              filter: `receiverId=eq.${user.id}`
+            }, async (payload) => {
+              console.log("Nova notificação recebida via Realtime:", payload);
+
+              if (payload.new) {
+                await getNotifications();
+              }
+            }
+        )
+        .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationsChannel);
+    };
+  }, [user.id]);
 
   return (
     <View style={styles.header}>
@@ -33,7 +81,6 @@ const Navigator = ({ user }) => {
         </Pressable>
 
         <Pressable onPress={() => {
-          setNotificationCount(0);
           router.push('notifications');
         }}>
           <Icon
@@ -42,6 +89,13 @@ const Navigator = ({ user }) => {
             strokeWidth={2}
             color={isRouteActive('favoritePosts') ? theme.colors.primary : theme.colors.text}
           />
+          {
+            notificationCount > 0 && (
+                <View style={styles.pill}>
+                  <Text style={styles.pillText}>{notificationCount}</Text>
+                </View>
+              )
+          }
         </Pressable>
 
         <Pressable onPress={() => router.push('newPost')}>
@@ -112,6 +166,22 @@ const styles = {
     alignItems: 'center',
     gap: 18
   },
+  pill: {
+    position: 'absolute',
+    right: -9,
+    top: -7,
+    height: hp(2.2),
+    width: hp(2.2),
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+    borderRadius: 20,
+  },
+  pillText: {
+    color: 'white',
+    fontSize: hp(1.2),
+    fontWeight: theme.fonts.bold,
+  }
 };
 
 export default Navigator;

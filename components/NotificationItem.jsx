@@ -5,44 +5,48 @@ import { hp } from '../helpers/common'
 import { TouchableOpacity } from 'react-native'
 import Avatar from './Avatar'
 import moment from 'moment/moment'
+import {useAuth} from "../contexts/AuthContext";
+import {NotificationService} from "../services/notificationsService";
 
 const NotificationItem = ({
     item,
     router
 }) => {
 
-const handleClick = () =>{
-    let {postId, commentId} = JSON.parse(item?.data);
-    router.push({pathname: 'postDetails', params: {postId, commentId}})
-}
+    const { user } = useAuth();
+    const handleClick = async () =>{
+        const { chatId } = JSON.parse(item?.data);
+        await NotificationService.updateNotification(item?.id, {read: true});
+        router.push({pathname: 'chatScreen', params: { userId: user.id, chatId: chatId, contactId: item?.senderId, contactName: item?.sender?.name }})
+    }
 
-const createdAt = moment(item?.created_at).format("MMM d");
+    const createdAt = moment(item?.created_at).format("MMM d");
 
-  return (
-    <TouchableOpacity style={styles.container} onPress={handleClick}>
-        <Avatar
-            uri={item?.sender?.image}
-            size={hp(5)}
-        />
-        <View style={styles.nameTitle}>
-            <Text style={styles.text}>
+    return (
+        <TouchableOpacity style={[styles.container, item?.read ? styles.notificationItemRead : styles.notificationItemUnread]} onPress={handleClick}>
+            <Avatar
+                uri={item?.sender?.image}
+                size={hp(5)}
+            />
+            <View style={styles.nameTitle}>
+                <Text style={styles.text}>
+                    {
+                        item?.sender?.name
+                    }
+                </Text>
+                <Text style={[styles.text, {color: theme.colors.textDark}]}>
+                    {
+                        item?.title
+                    }
+                </Text>
+            </View>
+            <Text style={[styles.text, {color: theme.colors.textLight}]}>
                 {
-                    item?.sender?.name
+                    createdAt
                 }
             </Text>
-            <Text style={[styles.text, {color: theme.colors.textDark}]}>
-                {
-                    item?.title
-                }
-            </Text>
-        </View>
-        <Text style={[styles.text, {color: theme.colors.textLight}]}>
-            {
-                createdAt
-            }
-        </Text>
-    </TouchableOpacity>
-  )
+        </TouchableOpacity>
+    )
 }
 
 export default NotificationItem
@@ -70,5 +74,11 @@ const styles = StyleSheet.create({
         fontSize: hp(1.6),
         fontWeight: theme.fonts.medium,
         color: theme.colors.text
-    }
+    },
+    notificationItemRead:{
+        backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    notificationItemUnread:{
+        backgroundColor: 'white'
+    },
 })

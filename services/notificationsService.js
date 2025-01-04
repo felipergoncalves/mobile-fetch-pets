@@ -1,43 +1,39 @@
+import createAxiosInstance from "../constants/axiosInstance";
 
-export const createNotification = async (notification)=>{
-    try{
-        const {data, error} = await supabase
-        .from('notifications')
-        .insert(notification)
-        .select()
-        .single();
+export const NotificationService = {
 
-        if(error){
-            console.log("notification error: ", error);
-            return {success: false, msg: "Algo deu errado"}
+    async fetchNotificationsByUserId(userId, params) {
+        const axiosInstance = await createAxiosInstance();
+
+        return await axiosInstance.get(`/notifications/user/${userId}`, {params})
+            .then(({data}) => {
+                const result = data.data
+                return {success: true, result};
+            })
+            .catch((error) => {
+                return {success: false, msg: error.message};
+            });
+    },
+
+    async createNotification(notification) {
+        try {
+            const axiosInstance = await createAxiosInstance();
+            const response = await axiosInstance.post(`/notifications`, notification);
+            return response.data;
+        } catch (error) {
+            console.error("Erro ao criar uma notificação:", error);
+            throw error;
         }
+    },
 
-        return {success: true, data: data};
-    }catch(error){
-        console.log("notification error: ", error);
-        return {success: false, msg: "Algo deu errado"}
-    }
-}
-
-export const fetchNotifications = async (receiverId)=>{
-    try{
-        const {data, error} = await supabase
-        .from('notifications')
-        .select(`
-            *,
-            sender: senderId(id, name, image)
-        `)
-        .eq('receiverId', receiverId)
-        .order("created_at", {ascending: false});
-
-        if(error){
-            console.log("fetchNotification error: ", error);
-            return {success: false, msg: "Não foi possível buscar as notificações"}
+    async updateNotification(notificationId, notification) {
+        try {
+            const axiosInstance = await createAxiosInstance();
+            const response = await axiosInstance.patch(`/notifications/${notificationId}`, notification);
+            return response.data;
+        } catch (error) {
+            console.error("Erro ao atualizar uma notificação:", error);
+            throw error;
         }
-
-        return {success: true, data: data};
-    }catch(error){
-        console.log("fetchNotification error: ", error);
-        return {success: false, msg: "Não foi possível buscar as notificações"}
-    }
-}
+    },
+};
