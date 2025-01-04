@@ -1,19 +1,15 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image, Alert} from 'react-native'
-import React, { useEffect, useState} from 'react'
-import { theme } from '../constants/theme'
-import { hp, wp} from '../helpers/common'
-import Avatar from './Avatar'
+import { useRouter } from "expo-router"
 import moment from 'moment'
+import React, { useEffect, useState } from 'react'
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Icon from '../assets/icons'
-import { getSupabaseFileUrl } from '../services/ImageService'
-import { createPostLike, removePostLike, getPostLikes } from '../services/postService'
-import Header from './Header'
-import BackButton from './BackButton'
-import Button from './Button'
-import { color } from '@rneui/themed/dist/config'
+import { theme } from '../constants/theme'
+import { hp } from '../helpers/common'
+import { generateChatUUID } from "../helpers/generateChatId"
+import { createFavorite, getPostLikes, removePostLike } from '../services/postService'
 import { getUserData } from '../services/userService'
-import {generateChatUUID} from "../helpers/generateChatId";
-import {useRouter} from "expo-router";
+import Avatar from './Avatar'
+import Header from './Header'
 
 const PostCardDetails = ({
     item,
@@ -73,7 +69,6 @@ const PostCardDetails = ({
         try{
             const res = await getUserData(item?.userId);
             if (res.success) {
-                console.log("RESULTADO VEM ASSIM: ", res.result)
                 setUser(res.result);
             }
         }catch(err){
@@ -81,31 +76,28 @@ const PostCardDetails = ({
         }
     }
 
-    const getPostLike = async (postId) => {
-       try{
-        const res = await getPostLikes(postId);
-        if (res.success) {
-
-            console.log("LIKES DO POST CHEGARAM: ", res.data);
+    const getPostLike = async (postId, userId) => {
+        console.log("Aqui chegou esses dados: " + postId + " " + userId);
+        try{
+            console.log("Estou entrando no try")
+            const res = await getPostLikes(postId, userId);
+            if (res.success) {
+                console.log("RESULTADO VEM ASSIM: ", res.result)
+                // setUser(res.result);
+            }
+        }catch(err){
+            console.error(err);
         }
-       }catch(err){
-        console.error(err);
-       }
       };
 
     useEffect(() => {
-        getPostLike(item?.id)
+        console.log("Estou chamando aqui")
+        getPostLike(item?.id, currentUser?.id)
+        console.log("Foi chamado aqui")
         setLikes(item?.postLikes);
         getUsers(item?.userId);
 
-        console.log("CURRENT USER: ", currentUser);
-        console.log("ITEM: ", item);
-        console.log("USER: ", user);
-
         currentUser.id == user?.id ? setIsDisabled(true) : setIsDisabled(false);
-
-        // console.log("POST CARD DETAILS: ", item);
-        // console.log("USER: ", user);
 
     }, [])
 
@@ -114,25 +106,49 @@ const PostCardDetails = ({
     //     router.push({pathname: 'postDetails', params:{postId: item?.id}})
     // }
 
-    // const confirmFavorite = () => {
-    //     Alert.alert(
-    //       liked ? "Remover dos Favoritos" : "Adicionar aos Favoritos",
-    //       liked
-    //         ? "Tem certeza que deseja remover este pet dos seus favoritos?"
-    //         : "Tem certeza que deseja adicionar este pet aos seus favoritos?",
-    //       [
-    //         {
-    //           text: "Cancelar",
-    //           style: "cancel",
-    //         },
-    //         {
-    //           text: "Sim",
-    //           onPress: onLike, // Chama a função onLike se o usuário confirmar
-    //         },
-    //       ]
-    //     );
-    //   };
+    const confirmFavorite = () => {
+        Alert.alert(
+          "Adicionar aos Favoritos", "Tem certeza que deseja adicionar este pet aos seus favoritos?",
+          [
+            {
+              text: "Cancelar",
+              style: "cancel",
+            },
+            {
+              text: "Sim",
+              onPress: onLike, // Chama a função onLike se o usuário confirmar
+            },
+          ]
+        );
+        // Alert.alert(
+        //   liked ? "Remover dos Favoritos" : "Adicionar aos Favoritos",
+        //   liked
+        //     ? "Tem certeza que deseja remover este pet dos seus favoritos?"
+        //     : "Tem certeza que deseja adicionar este pet aos seus favoritos?",
+        //   [
+        //     {
+        //       text: "Cancelar",
+        //       style: "cancel",
+        //     },
+        //     {
+        //       text: "Sim",
+        //       onPress: onLike, // Chama a função onLike se o usuário confirmar
+        //     },
+        //   ]
+        // );
+      };
 
+    const onLike = async ()=>{
+        // let data = {
+        //     userId: currentUser?.id,
+        //     postId: item?.id
+        // }
+        // setLikes([...likes, data])
+        let res = await createFavorite(item?.id, currentUser?.id);
+        if(!res.success){
+            console.log("POST ADICIONADO AOS FAVORITOS")
+        }
+    }
     // const onLike = async ()=>{
     //     if(liked){
     //         //remove like
@@ -148,7 +164,7 @@ const PostCardDetails = ({
     //             postId: item?.id
     //         }
     //         setLikes([...likes, data])
-    //         let res = await createPostLike(data);
+    //         let res = await createFavorite(data);
     //         if(!res.success){
     //             Alert.alert("Publicação", "Houve um problema!");
     //         }
@@ -229,12 +245,12 @@ const PostCardDetails = ({
                 <Text style={styles.petName}>{item.pet_name}</Text>
             </View>
             <View style={styles.footerButton}>
+                <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
+                    <Icon name="heart" size={24} fill={'transparent'} color={theme.colors.textLight} />
+                </TouchableOpacity>
                 {/* <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
                     <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
                 </TouchableOpacity> */}
-                <TouchableOpacity style={styles.likePost}>
-                    <Icon name="heart" size={24} fill={theme.colors.rose} color={theme.colors.rose} />
-                </TouchableOpacity>
                 {/* <Text style={styles.count}>
                     {
                         likes?.length

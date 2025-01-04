@@ -90,6 +90,10 @@ const UserHeader = ({user, router, handleLogout}) => {
                     <Image style={{ height: hp(3), width: "7%", alignSelf: "center"}} resizeMode='contain' source={require('../../assets/images/paw.png')} />
                         <Text style={styles.actionText}>Pets adotados</Text>
                     </Pressable>
+                    <Pressable style={styles.accountAction} onPress={()=> router.push('favorites')}>
+                    <Image style={{ height: hp(3), width: "7%", alignSelf: "center"}} resizeMode='contain' source={require('../../assets/images/paw.png')} />
+                        <Text style={styles.actionText}>Favoritos</Text>
+                    </Pressable>
                 </View>
               </View>
               <View style={styles.logoutSection}>
