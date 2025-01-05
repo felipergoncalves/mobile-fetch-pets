@@ -116,7 +116,6 @@ const ChatScreen = () => {
     };
 
     const donatePet = async(postId, adopterId) => {
-        console.log("Recebi o id do post e do adotante aqui: " + postId + " " + adopterId);
         try {
             const response = await adoptPet(postId, adopterId);
             if (response.success) {
@@ -170,7 +169,6 @@ const ChatScreen = () => {
     );
 
     useEffect(() => {
-        console.log("Subscribing to Realtime for chatId:", chatId);
         const channel = supabase
             .channel('messages')
             .on(
@@ -182,7 +180,6 @@ const ChatScreen = () => {
                     filter: `chat_id=eq.${chatId}`
                 },
                 (payload) => {
-                    console.log("Nova mensagem recebida via Realtime:", payload);
 
                     if (payload.new) {
                         // Atualize o estado de forma segura

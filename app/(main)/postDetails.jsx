@@ -1,17 +1,12 @@
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import { createComment, fetchPostDetails, removeComment, removePost } from '../../services/postService';
-import { createNotification } from '../../services/notificationsService';
-import { theme } from '../../constants/theme';
-import { hp, wp } from '../../helpers/common';
-import Input from '../../components/Input';
-import { useAuth } from '../../contexts/AuthContext';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import Loading from '../../components/Loading';
-import Icon from '../../assets/icons';
-import CommentItem from '../../components/CommentItem';
-import { getUserData } from '../../services/userService';
 import PostCardDetails from '../../components/PostCardDetails';
+import { theme } from '../../constants/theme';
+import { useAuth } from '../../contexts/AuthContext';
+import { hp, wp } from '../../helpers/common';
+import { fetchPostDetails, removePost } from '../../services/postService';
 
 const PostDetails = () => {
     const {postId, commentId} = useLocalSearchParams();
@@ -23,25 +18,9 @@ const PostDetails = () => {
     const commentRef = useRef('');
     const [loading, setLoading] = useState(false);
 
-    // const handleNewComment = async (payload) => {
-    //   console.log("Novo comentário", payload.new)
-    //   if(payload.new){
-    //     let newComment = {...payload.new};
-    //     let res = await getUserData(newComment.userId);
-    //     newComment.user = res.success? res.data: {};
-    //     setPost(prevPost=>{
-    //       return {
-    //         ...prevPost,
-    //         comments: [newComment, ...prevPost.comments]
-    //       }
-    //     })
-    //   }
-    // }
-
     useEffect(() => {
         // Carregar posts ao iniciar a página
         getPostDetails();
-        // console.log("Todos os posts: ", posts);
       }, []);
 
     const getPostDetails = async ()=> {
@@ -51,47 +30,6 @@ const PostDetails = () => {
         setStartLoading(false);
     }
     
-    // const onNewComment = async() => {
-    //   if(!commentRef.current) return null;
-    //   let data = {
-    //     userId: user?.id,
-    //     postId: post?.id,
-    //     text: commentRef.current
-    //   }
-    //   //create comment
-    //   setLoading(true);
-    //   let res = await createComment(data);
-    //   setLoading(false);
-    //   if(res.success){
-    //     if(user.id != post.userId){
-    //       //send notification
-    //       let notify = {
-    //         senderId: user.id,
-    //         receiverId: post.userId,
-    //         title: "comentou na sua publicação",
-    //         data: JSON.stringify({postId: post.id, commentId: res?.data?.id})
-    //       }
-    //       createNotification(notify);
-    //     }
-    //     inputRef?.current?.clear();
-    //     commentRef.current = "";
-    //   }else{
-    //     Alert.alert("Comentário", res.msg);
-    //   }
-    // }
-
-    // const onDeleteComment = async (comment)=>{
-    //   let res = await removeComment(comment?.id);
-    //   if(res.success){
-    //     setPost(prevPost => {
-    //       let updatedPost = {...prevPost};
-    //       updatedPost.comments = updatedPost.comments.filter(c=> c.id != comment.id);
-    //       return updatedPost;
-    //     })
-    //   }else{
-    //     Alert.alert('Comentário', res.msg)
-    //   }
-    // }
 
     const onDeletePost = async (item) => {
       //delete post here
@@ -136,52 +74,6 @@ const PostDetails = () => {
           onDelete={onDeletePost}
           onEdit={onEditPost}
         />
-
-        
-        {/* <View style={styles.inputContainer}>
-          <Input
-            inputRef={inputRef}
-            placeholder="Escreva um comentário..."
-            onChangeText={value=>commentRef.current = value}
-            placeholderTextColor={theme.colors.textLight}
-            containerStyle={{flex: 1, height: hp(6.2), borderRadius: theme.radius.xl}}
-          />
-
-          {
-            loading?(
-                <View>
-                  <Loading size='small' />
-                </View>
-            ):(
-              <TouchableOpacity style={styles.sendIcon} onPress={onNewComment}>
-               <Icon name="send" color={theme.colors.primaryDark} />
-              </TouchableOpacity>
-            )
-          }
-        </View>
-
-        
-        <View style={{marginVertical: 15, gap: 17}}>
-          {
-            post?.comments?.map(comment=>
-              <CommentItem
-                key={comment?.id?.toString()}
-                item={comment}
-                onDelete={onDeleteComment}
-                highlight = {comment.id == commentId}
-                canDelete = {user.id == comment.userId || user.id == post.userId}
-              />
-            )
-          }
-          {
-            post?.comments?.length == 0 && (
-              <Text style={{color: theme.colors.text, marginLeft: 5}}>
-                Seja o primeiro a comentar!
-              </Text>
-            )
-          }
-        </View> */}
-      {/* </ScrollView> */}
     </View>
   )
 }

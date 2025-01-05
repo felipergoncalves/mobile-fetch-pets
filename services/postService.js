@@ -88,7 +88,6 @@ export const fetchPosts = async (params) => {
 
     return await axios.get('/posts/', {params})
         .then(({data}) => {
-            //console.log("POSTS CHEGARAM: ", data.data)
             const result = data.data.filter(post => post.adopter === null);
             return {success: true, result};
         })
@@ -110,12 +109,22 @@ export const createPostLike = async (postLike)=>{
         });
 }
 
-export const getPostLikes = async (postId, userID)=>{
+export const getPostLikesByUser = async (postId, userID)=>{
     const axios = await createAxiosInstance();
-    console.log("Cheguei no serviço: " + postId + " " + userID)
-    return await axios.get(`/favorites/post/${postId}`, {userId: userID})
+    return await axios.get(`/favorites/post/${postId}/${userID}`)
         .then(({data}) => {
-            console.log("RESULTADO DOS LIKES: ", data);
+            result = data.data;
+            return {success: true, result, data};
+        })
+        .catch((error) => {
+            return {success: false, msg: error.message};
+        });
+}
+
+export const getPostLikesByPost = async (postId)=>{
+    const axios = await createAxiosInstance();
+    return await axios.get(`/favorites/post/${postId}`)
+        .then(({data}) => {
             result = data.data;
             return {success: true, result, data};
         })
@@ -129,7 +138,6 @@ export const createFavorite = async (postId, userId)=>{
 
     return await axios.post(`/favorites`, {postId: postId, userId: userId})
         .then(({data}) => {
-            console.log("CRIAR LIKE: ", data);
             return {success: true, result};
         })
         .catch((error) => {
@@ -137,12 +145,11 @@ export const createFavorite = async (postId, userId)=>{
         });
 }
 
-export const removeFavorite = async (postId)=>{
+export const removeFavorite = async (favoriteId)=>{
     const axios = await createAxiosInstance();
 
-    return await axios.delete(`/favorites/${postId}`)
+    return await axios.delete(`/favorites/${favoriteId}`)
         .then(({data}) => {
-            console.log("REMOVER LIKE: ", data);
             return {success: true, result};
         })
         .catch((error) => {
@@ -207,7 +214,6 @@ export const fetchFavoritesPets = async (userId) => {
     return await axios.get(`/favorites/user/${userId}`)
         .then(({data}) => {
             result = Array.isArray(data.data) ? data.data : [];
-            console.log("BUSCANDO OS FAVORITOS AQUI: ", result);
             return {success: true, result};
         })
         .catch((error) => {
@@ -218,15 +224,12 @@ export const fetchFavoritesPets = async (userId) => {
 export const adoptPet = async (postId, adopterId) => {
     const axios = await createAxiosInstance();
 
-    return await axios.patch(`/posts/${postId}`, {userId: adopterId})
+    return await axios.patch(`/posts/${postId}`, {adopter: adopterId})
         .then(({data}) => {
-            console.log("RESULTADO DA ADOÇÃO: ", data);
             result = Array.isArray(data.data) ? data.data : [];
-            console.log("Resultado dos pets adotados: ", result);
             return {success: true, result};
         })
         .catch((error) => {
-            console.log("Deu ruim aqui em")
             return {success: false, msg: error.message};
         });
 }
@@ -237,11 +240,9 @@ export const fetchMyAdoptedPets = async (userId) => {
     return await axios.get(`/posts/adopted/${userId}`)
         .then(({data}) => {
             result = Array.isArray(data.data) ? data.data : [];
-            console.log("Resultado dos pets adotados: ", result);
             return {success: true, result};
         })
         .catch((error) => {
-            console.log("Deu ruim aqui em")
             return {success: false, msg: error.message};
         });
 }

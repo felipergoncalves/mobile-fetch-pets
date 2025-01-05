@@ -6,7 +6,7 @@ import Icon from '../assets/icons'
 import { theme } from '../constants/theme'
 import { hp } from '../helpers/common'
 import { generateChatUUID } from "../helpers/generateChatId"
-import { createFavorite, getPostLikes, removePostLike } from '../services/postService'
+import { createFavorite, getPostLikes, getPostLikesByPost, getPostLikesByUser, removeFavorite, removePostLike } from '../services/postService'
 import { getUserData } from '../services/userService'
 import Avatar from './Avatar'
 import Header from './Header'
@@ -31,6 +31,8 @@ const PostCardDetails = ({
     }
 
     const [likes, setLikes] = useState([]);
+    const [postLikes, setPostLikes] = useState(0);
+    const [liked, setLiked] = useState(false);
     const [user, setUser] = useState({});
     const [isDisabled, setIsDisabled] = useState(false);
     const router = useRouter();
@@ -76,24 +78,56 @@ const PostCardDetails = ({
         }
     }
 
-    const getPostLike = async (postId, userId) => {
-        console.log("Aqui chegou esses dados: " + postId + " " + userId);
+    const getPostLikeByUserId = async (postId, userId) => {
         try{
-            console.log("Estou entrando no try")
-            const res = await getPostLikes(postId, userId);
+            const res = await getPostLikesByUser(postId, userId);
             if (res.success) {
-                console.log("RESULTADO VEM ASSIM: ", res.result)
-                // setUser(res.result);
+                setLikes(res.result)
+
+                // Verifica se o usuário já deu like no post
+                const userLiked = res.result.some(like => like.userId === userId);
+                setLiked(userLiked); // Atualiza o estado de 'liked'
             }
         }catch(err){
             console.error(err);
         }
       };
 
+    const getPostLikeByPostId = async (postId) => {
+        try{
+            const res = await getPostLikesByPost(postId);
+            if (res.success) {
+                setPostLikes(res.result.length)
+            }
+        }catch(err){
+            console.error(err);
+        }
+      };
+    
+      const removePostFavorite = async (favoriteId) => {
+        try {
+            const res = await removeFavorite(favoriteId);
+            if (res.success) {
+                setLikes(likes.filter(like => like.id !== favoriteId));
+                setLiked(false);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleRemoveFavorite = () => {
+        const favorite = likes.find(like => like.userId === currentUser.id);
+        if (favorite) {
+            removePostFavorite(favorite.id);
+        } else {
+            Alert.alert("Erro", "Favorito não encontrado!");
+        }
+    };
+
     useEffect(() => {
-        console.log("Estou chamando aqui")
-        getPostLike(item?.id, currentUser?.id)
-        console.log("Foi chamado aqui")
+        getPostLikeByUserId(item?.id, currentUser?.id)
+        getPostLikeByPostId(item?.id)
         setLikes(item?.postLikes);
         getUsers(item?.userId);
 
@@ -101,75 +135,34 @@ const PostCardDetails = ({
 
     }, [])
 
-    // const openPostDetails = ()=>{
-    //     if(!showMoreIcon) return null;
-    //     router.push({pathname: 'postDetails', params:{postId: item?.id}})
-    // }
-
     const confirmFavorite = () => {
         Alert.alert(
-          "Adicionar aos Favoritos", "Tem certeza que deseja adicionar este pet aos seus favoritos?",
-          [
-            {
-              text: "Cancelar",
-              style: "cancel",
-            },
-            {
-              text: "Sim",
-              onPress: onLike, // Chama a função onLike se o usuário confirmar
-            },
-          ]
+            liked ? "Remover dos Favoritos" : "Adicionar aos Favoritos",
+            liked
+                ? "Tem certeza que deseja remover este pet dos seus favoritos?"
+                : "Tem certeza que deseja adicionar este pet aos seus favoritos?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Sim",
+                    onPress: liked ? handleRemoveFavorite : onLike,
+                },
+            ]
         );
-        // Alert.alert(
-        //   liked ? "Remover dos Favoritos" : "Adicionar aos Favoritos",
-        //   liked
-        //     ? "Tem certeza que deseja remover este pet dos seus favoritos?"
-        //     : "Tem certeza que deseja adicionar este pet aos seus favoritos?",
-        //   [
-        //     {
-        //       text: "Cancelar",
-        //       style: "cancel",
-        //     },
-        //     {
-        //       text: "Sim",
-        //       onPress: onLike, // Chama a função onLike se o usuário confirmar
-        //     },
-        //   ]
-        // );
-      };
+    };
 
-    const onLike = async ()=>{
-        // let data = {
-        //     userId: currentUser?.id,
-        //     postId: item?.id
-        // }
-        // setLikes([...likes, data])
-        let res = await createFavorite(item?.id, currentUser?.id);
-        if(!res.success){
-            console.log("POST ADICIONADO AOS FAVORITOS")
+    const onLike = async () => {
+        try {
+            const res = await createFavorite(item?.id, currentUser?.id);
+            if (res.success) {
+                setLikes([...likes, { userId: currentUser?.id, id: res.result.id }]);
+                setLiked(true);
+                router.push('/favorites')
+            }
+        } catch (err) {
+            console.error(err);
         }
-    }
-    // const onLike = async ()=>{
-    //     if(liked){
-    //         //remove like
-    //         // let updatedLikes = likes.filter(like=> like.userId!=currentUser?.id)
-    //         setLikes([...updatedLikes])
-    //         let res = await removePostLike(item?.id, currentUser?.id);
-    //         if(!res.success){
-    //             Alert.alert("Publicação", "Houve um problema!");
-    //         }
-    //     }else{
-    //         let data = {
-    //             userId: currentUser?.id,
-    //             postId: item?.id
-    //         }
-    //         setLikes([...likes, data])
-    //         let res = await createFavorite(data);
-    //         if(!res.success){
-    //             Alert.alert("Publicação", "Houve um problema!");
-    //         }
-    //     }
-    // }
+    };
 
     const confirmDelete = () => {
         Alert.alert(
@@ -246,16 +239,13 @@ const PostCardDetails = ({
             </View>
             <View style={styles.footerButton}>
                 <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
-                    <Icon name="heart" size={24} fill={'transparent'} color={theme.colors.textLight} />
+                    <Icon 
+                        name="heart"
+                        size={24}
+                        fill={liked? theme.colors.rose : 'transparent'}
+                        color={liked? theme.colors.rose : theme.colors.textLight}
+                    />
                 </TouchableOpacity>
-                {/* <TouchableOpacity style={styles.likePost} onPress={confirmFavorite}>
-                    <Icon name="heart" size={24} fill={liked? theme.colors.rose : 'transparent'} color={liked? theme.colors.rose : theme.colors.textLight} />
-                </TouchableOpacity> */}
-                {/* <Text style={styles.count}>
-                    {
-                        likes?.length
-                    }
-                </Text> */}
             </View>
         </View>
         <View style={{flexDirection: "row", width: "100%", zIndex: 5, justifyContent: "center", gap: 20}}>

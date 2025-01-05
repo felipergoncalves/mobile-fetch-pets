@@ -22,7 +22,6 @@ const Navigator = ({ user }) => {
 
   const handleNewNotification = async (payload) => {
     if(payload.eventType === "INSERT" && payload.new.id){
-      console.log("executed handleNewNotification")
       await getNotifications();
     }
   }
@@ -43,7 +42,6 @@ const Navigator = ({ user }) => {
   }, [])
 
   useEffect(() => {
-    console.log("Subscribing to Realtime for notification:", user.id);
     const notificationsChannel = supabase
         .channel('notifications')
         .on(
@@ -54,7 +52,6 @@ const Navigator = ({ user }) => {
               table: 'notifications',
               filter: `receiverId=eq.${user.id}`
             }, async (payload) => {
-              console.log("Nova notificação recebida via Realtime:", payload);
 
               if (payload.new) {
                 await getNotifications();
@@ -87,7 +84,7 @@ const Navigator = ({ user }) => {
             name="heart"
             size={hp(3.2)}
             strokeWidth={2}
-            color={isRouteActive('favoritePosts') ? theme.colors.primary : theme.colors.text}
+            color={isRouteActive('notifications') ? theme.colors.primary : theme.colors.text}
           />
           {
             notificationCount > 0 && (

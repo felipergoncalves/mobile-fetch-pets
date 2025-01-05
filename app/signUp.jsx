@@ -305,6 +305,17 @@ const signUpPage = () => {
                                         value={newUser.birthDate}
                                     />
 
+                                    {/* CEP */}
+                                    <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
+                                        CEP
+                                    </Text>
+                                    <Input
+                                        onChangeText={handleZipChange}
+                                        containerStyle={{ marginBottom: 10 }}
+                                        placeholder="Digite seu CEP"
+                                        keyboardType="number-pad"
+                                        value={tempZip} // Usar o valor temporário enquanto o usuário digita
+                                    />
                                     {/* Estado / Cidade */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
                                         Estado/Cidade
@@ -324,17 +335,6 @@ const signUpPage = () => {
                                         containerStyle={{ marginBottom: 10 }}
                                         value={newUser.address}
                                         placeholder="Digite sua rua"
-                                    />
-                                    {/* CEP */}
-                                    <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
-                                        CEP
-                                    </Text>
-                                    <Input
-                                        onChangeText={handleZipChange}
-                                        containerStyle={{ marginBottom: 10 }}
-                                        placeholder="Digite seu CEP"
-                                        keyboardType="number-pad"
-                                        value={tempZip} // Usar o valor temporário enquanto o usuário digita
                                     />
                                     {/* Numero */}
                                     <Text style={{ width: '100%', marginBottom: 5, fontWeight: '600' }}>
@@ -411,7 +411,7 @@ const signUpPage = () => {
                         {isUpdateBoolean ? (
                             <Button title={"Voltar"} buttonStyle={styles.textButton} onPress={() => router.push('settings')} />
                         ) : (
-                            <Button title={"Voltar ao Login"} buttonStyle={styles.textButton} onPress={() => router.push('login')} />
+                            <Button title={"Voltar ao Login"} buttonStyle={styles.textButton} onPress={() => router.push('/login')} />
                         )}
                     </>
                 )}

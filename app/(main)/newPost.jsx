@@ -17,14 +17,12 @@ const NewPost = () => {
 
   const { post } = useLocalSearchParams();
   const postToEdit = post ? JSON.parse(post) : {};
-  //console.log("POST TO EDIT: ", postToEdit);
 
   const handleSubmit = async (data) => {
     try {
       setLoading(true);
       const res = await createPost(data, data.userId);
       setLoading(false);
-      console.log(res);
       if (res.success) {
         //rota de sucesso - ajustar
         router.push("/petRegistrationSuccess");
@@ -58,7 +56,6 @@ const NewPost = () => {
       if (step < 3) {
         setStep((prevStep) => prevStep + 1);
       } else {
-        // console.log("Terceiro passo: ", updatedForm);
 
         // Se ele tiver id, é uma edição, se não é uma nova postagem.
         if (postToEdit.id) {

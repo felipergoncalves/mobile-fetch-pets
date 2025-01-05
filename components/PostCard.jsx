@@ -66,7 +66,6 @@ const PostCard = ({
 
     const openPostDetails = ()=>{
         if(!showMoreIcon) return null;
-        console.log("Usuário atuall: ", currentUser);
         router.push({pathname: 'postDetails', params:{postId: item?.id, currentUser: currentUser}})
     }
 

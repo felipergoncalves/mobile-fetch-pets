@@ -25,12 +25,10 @@ const Home = () => {
   useEffect(() => {
     // Carregar posts ao iniciar a página
     getPosts();
-    // console.log("Todos os posts: ", posts);
   }, []);
 
   const getPosts = async (species = null) => {
     if (!isLoading) setIsLoading(true);
-    console.log("Filtro: ", filter);
     if(species !== null && species === filter){
       species = null;
     }
@@ -38,10 +36,7 @@ const Home = () => {
     try{
       const res = await fetchPosts({limit: limit, species: species});
       if (res.success) {
-        // console.log("POSTS QUE CHEGARAM AQUI: ", res.data);
         setPosts(res.result);
-        // console.log("Estado de posts após setPosts: ", posts);
-        // setHasMore(res.data.length === limit);
         setFilter(species);
       }
     }catch(err){

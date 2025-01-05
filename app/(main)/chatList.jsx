@@ -26,7 +26,6 @@ const ChatList = () => {
         try {
             setLoading(true);
             const response = await MessageService.getConversations(user.id);
-            console.log("Conversations:", response.data);
             const fetchedConversations = response.data;
             // setConversations(response.data);
 
@@ -54,7 +53,6 @@ const ChatList = () => {
 
     // Adicionando Realtime para atualizar a lista de conversas
     useEffect(() => {
-        console.log("Subscribing to Realtime for conversations");
         const channel = supabase
             .channel('messages')
             .on(
@@ -65,7 +63,6 @@ const ChatList = () => {
                     table: 'messages',
                 },
                 (payload) => {
-                    console.log("Nova mensagem recebida via Realtime:", payload);
 
                     if (payload.new) {
                         const newMessage = payload.new;

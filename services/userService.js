@@ -8,7 +8,6 @@ export const getUserData = async (userId) => {
 
     return await axios.get('/users/'+userId)
     .then(({data}) => {
-        // console.log("USUÁRIO BUSCADO: ", data.data);
         result = data.data;
         return {success: true, result, data};
     })
@@ -114,7 +113,6 @@ export const signUp = async (data, image) => {
     if (error) {
         return {success: false, msg: error.message};
     }
-    console.log('Salvando no banco...')
     // Salvar no banco a referencia da imagem
     return await axios.post('/auth/save-image', {token: res.data.token, image: imageUpdated, uid: res.data.user.id})
     .then(({data}) => {

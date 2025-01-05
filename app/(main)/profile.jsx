@@ -51,7 +51,6 @@ const Profile = () => {
       Alert.alert("Confirmar", "Tem certeza que deseja sair?", [
         {
           text: 'Cancelar',
-          onPress: ()=> console.log('Modal cancelado'),
           style: 'cancel'
         },
         {

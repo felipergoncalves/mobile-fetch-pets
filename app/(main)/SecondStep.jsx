@@ -81,7 +81,6 @@ const SecondStep = ({ onNext, onPickImage }) => {
       setFile(postToEdit.image);
       setIsConfirmed(postToEdit.opt_in)
     }
-    //console.log("POST ESTÁ VINDO ASSIM: ", postToEdit);
   }, [])
 
   return (
